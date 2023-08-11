@@ -1,3 +1,12 @@
+## 🚨 Delete this top section after cloning 🚨
+
+To get started with this template, follow these steps:
+
+1. On this GitHub repo page, in the top right corner above files, click the **Use this template** > **Create repository from template** button.
+2. OR use `git clone https://github.com/Ecom-Analytics-Co/streamlit-projectstarter.git yourprojectname` to clone this repo to your local machine.
+3. Edit the `requirements.txt` file to match the dependencies you need for your project.
+4. Remove this entire section from your README.md file once you've cloned the repository and are ready to proceed with your project.
+
 ## Running & Developing the Project Locally
 
 ### .env file

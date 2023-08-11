@@ -9,6 +9,11 @@ st.set_page_config(
     layout="centered" # "centered" constrains page content to a fixed width; "wide" uses the entire screen
 )
 
+# note that this Streamlit example is setup as a multi-page app
+# making this file the "entrypoint file", or the first page the app will show to the user
+# pages are easily added by creating .py files in a `pages/` directory relative to your entrypoint file
+# to make this a single page app, simply remove the `pages/` directory
+# more info: https://docs.streamlit.io/library/get-started/multipage-apps
 
 st.title("⚡Counter Example on Streamlit")
 
