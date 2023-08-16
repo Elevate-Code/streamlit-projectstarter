@@ -1,13 +1,16 @@
 ## 🚨 Delete this top section after cloning 🚨
 
-To get started with this template, follow these steps:
+To get started with this template, follow all these steps:
 
 1. On this GitHub repo page, in the top right corner above files, click the **Use this template** > **Create a new repo** button.
 2. OR use `git clone https://github.com/Ecom-Analytics-Co/streamlit-projectstarter.git yourprojectname` to clone this repo to your local machine.
-3. Run the `start_project.py` script to create necessary files, then delete the script file as it is no longer needed.
-4. Edit the `requirements.txt` file to match the dependencies you need for your project.
-5. Delete the `/pages` folder if you are only building a single page app.
-6. ⚠️ Remove this entire section from your README.md file once you've cloned the repository and are ready to proceed with your project.
+3. Edit the `requirements.txt` file to match the dependencies you need for your project.
+4. Delete the `/pages` folder if you are only building a single page app.
+5. Check out the [streamlit_tips.md](streamlit_tips.md) file for how to use the debugger with VS Code or PyCharm and other tips.
+6. Run the `start_project.py` script to create necessary files, then delete the script file as it is no longer needed.
+7. ⚠️ Remove this entire section from your README.md file once you've cloned the repository and are ready to proceed with your project.
+
+---
 
 ## Running & Developing the Project Locally
 
