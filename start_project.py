@@ -16,13 +16,13 @@ def delete_file(file_name):
 
 def main():
     # the missing indentation is intentional in this multi-line string
-    env_example_content = """# If you add or remove a key in .env, make sure to make the change here as well
-# ⚠️ Do not save any secret values in this file ⚠️
+    env_example_content = """# If you add or remove a key in .env, make sure to add the key here as well
+# ⚠️ Do not save any secret VALUES in this file ⚠️
 EXAMPLE_API_KEY=
 """
 
     # the missing indentation is intentional in this multi-line string
-    env_content = """# 🔁 If you add or remove a key to .env, make sure to make the change in .env.example as well
+    env_content = """# 🔁 If you add or remove a key to .env, make sure to make the example change in .env.example as well
 EXAMPLE_API_KEY=your-api-key-goes-here
 """
 
