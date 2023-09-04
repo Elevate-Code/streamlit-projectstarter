@@ -24,6 +24,11 @@ Requires Python 3.8 or higher
 - Run `pip install -r requirements.txt` to install all dependencies
 - Run `streamlit run app.py` to start the server
 
+### Subsequent Runs 🚀
+- Run `venv\Scripts\activate` to activate the virtual environment
+- Run `streamlit run app.py` to start the server
+- (optionally) `pip install -r requirements.txt` if you encounter a `ModuleNotFoundError`
+
 ## Deploying to Railway.app
 - Dashboard > New Project > Deploy from GitHub repo
 - If you get a "Invalid service name" error create a blank service and then link the repo under Settings > Source Repo
