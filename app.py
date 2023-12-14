@@ -1,8 +1,10 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 import os
 load_dotenv()
+
+client = OpenAI()
 
 st.set_page_config(
     page_title="Streamlit OpenAI Completion",
@@ -10,20 +12,18 @@ st.set_page_config(
     layout="wide" # "centered" constrains page content to a fixed width; "wide" uses the entire screen
 )
 
-def generate_response(message_placeholder):
+def stream_response(messages, message_placeholder):
     # note that you cant initialize widgets in functions
     response_content = ""
-    for response in openai.ChatCompletion.create(
-            model=model,
+    for response in client.chat.completions.create(
+            messages=messages,
+            model='gpt-4-1106-preview',
             stream=True,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_prompt}
-            ]
+            max_tokens=2000,
+            temperature=1.0
     ):
-        response_content += response.choices[0].delta.get("content", "")
+        content = getattr(response.choices[0].delta, 'content', "")
+        response_content += str(content) if content is not None else ""
         message_placeholder.write(response_content + "▌")
     return response_content
 
@@ -43,34 +43,37 @@ and cleared across reruns.
 """, icon="ℹ️")
 
 
-system_message = st.text_area('System Prompt', "You are a helpful assistant.")
-user_prompt = st.text_area('User Prompt', placeholder="Enter a user message here.")
+if "messages" not in st.session_state:
+    # Initialize the session state
+    st.session_state["messages"] = []
 
-with st.expander("⚙️ Options", expanded=True):
-    model = st.radio("Model", ('gpt-3.5-turbo', 'gpt-4'), index=1, horizontal=True)
-    max_tokens = st.number_input("Max Tokens", 500)
-    temperature = st.number_input("Temperature", 0.8)
+# display previous messages
+for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
+# create empty position placeholders for new messages
+user_placeholder = st.empty()
+asst_placeholder = st.empty()
 
-send_btn_clicked = st.button("Send ➡️")
+user_prompt = st.text_area("User Prompt")
+send_btn_clicked = st.button('Send')
 if send_btn_clicked:
-    st.session_state['show_assistant_response'] = True
+    user_placeholder.chat_message("user").write(user_prompt)
+    asst_placeholder = asst_placeholder.chat_message("assistant").empty()
+    # send msg thread + user msg, stream response and update msg thread
+    messages = st.session_state.messages
+    messages.append({"role": "user", "content": user_prompt})
+    response_content = stream_response(messages, asst_placeholder)
+    messages.append({"role": "assistant", "content": response_content})
 
-if 'show_assistant_response' in st.session_state: # hiding the assistant response section until send button clicked
-    with st.expander("Assistant Response", expanded=True):
-        with st.chat_message("assistant"):
-            message_placeholder = st.empty()
-            if send_btn_clicked:
-                # Send new request & stream response when the send button is clicked...
-                response_content = generate_response(message_placeholder)
-                st.session_state['response_content'] = response_content
-            else:
-                #...and persist the response when other actions cause the script to rerun
-                message_placeholder.write(st.session_state['response_content'])
-
+# clear chat and rerun
+clear_btn_clicked = st.button('Clear Chat')
+if clear_btn_clicked:
+    st.session_state.messages = []
+    st.rerun()
 
 st.divider()
 
-st.write("Another example of using session state to persist variables across reruns:")
+st.write("Example of using session state to persist variables across reruns:")
 if 'count' not in st.session_state:
     st.session_state.count = 0
 plus_one_btn_clicked = st.button('Add +1')

@@ -30,5 +30,5 @@ Add the following configuration to your `launch.json` file:
 
 # Common Gotchas
 
-`st.button` does not retain state, use caution with what actions are nested inside of it
+`st.button` does not retain state, use caution with what actions are nested inside of it `with st.button('Submit'):`.
 See here: https://docs.streamlit.io/library/advanced-features/button-behavior-and-examples#when-to-use-if-stbutton
