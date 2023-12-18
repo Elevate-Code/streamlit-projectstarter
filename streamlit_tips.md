@@ -8,6 +8,7 @@ In the **Run/Debug Configuration** window, add a new Python configuration with t
 - Enter `run app.py` in the "Parameters" field
 
 ## Using the debugger with VS Code
+Create a `.vscode` folder in the root of your project (if it doesn't already exist) and create a `launch.json` file inside of it.
 
 Add the following configuration to your `launch.json` file:
 
@@ -27,6 +28,8 @@ Add the following configuration to your `launch.json` file:
  ]
 }
 ```
+
+Once you've updated your launch.json file, you need to navigate to the Run tab on the left gutter of the VS Code app and specify that you want to use this config to debug the app.
 
 # Common Gotchas
 
