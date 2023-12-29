@@ -53,7 +53,6 @@ if "ss_hello_text" not in st.session_state:
 # Hello text_area, with the users input auto-saved to a file
 hello_text = st.text_area(
     "Hello",
-     value=st.session_state.ss_hello_text,
      key="ss_hello_text",
      on_change=lambda: open(HELLO_TEXT_PATH, "w").write(st.session_state.ss_hello_text)
 )
