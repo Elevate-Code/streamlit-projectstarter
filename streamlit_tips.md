@@ -33,6 +33,14 @@ Once you've updated your launch.json file, you need to navigate to the Run tab o
 
 # Common Gotchas
 
+**Order of execution in Streamlit**
+
+On session start (aka. first render), the default values (value, index params) are set.
+
+Then, when updating Session state in response to events:
+1. Callback function (on_change, on_click) gets executed first.
+2. Then the app is executed from top to bottom.
+
 `st.button` does not retain state, use caution with what actions are nested inside of it `with st.button('Submit'):`.
 See here: https://docs.streamlit.io/library/advanced-features/button-behavior-and-examples#when-to-use-if-stbutton
 
@@ -55,5 +63,35 @@ hello_text = st.text_area(
     "Hello",
      key="ss_hello_text",
      on_change=lambda: open(HELLO_TEXT_PATH, "w").write(st.session_state.ss_hello_text)
+)
+```
+
+## Persist Input Widget Values Across Page Navigation
+
+``` python
+import streamlit as st
+
+# Initialize session state with default values on first render only.
+if 'some_text' not in st.session_state:
+    st.session_state.some_text = "ON RENDER"
+
+# Text input widget whose value persists across reruns and page nav.
+some_text = st.text_input(
+    label="Persistent text_input",
+    value=st.session_state.some_text,
+    key='some_text_key',
+    on_change=lambda: setattr(st.session_state, 'some_text', st.session_state.some_text_key)
+)
+st.write(f"You set some_text to: `{some_text}`")
+```
+
+For input widgets that have `index` instead of `value` to set the default value you would do something like this:
+
+``` python
+my_quality = st.radio(
+    # ...
+    index=('standard', 'hd').index(st.session_state.quality),
+    key='quality_key',
+    on_change=lambda: setattr(st.session_state, 'quality', st.session_state.quality_key)
 )
 ```
