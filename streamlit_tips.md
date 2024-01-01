@@ -95,3 +95,22 @@ my_quality = st.radio(
     on_change=lambda: setattr(st.session_state, 'quality', st.session_state.quality_key)
 )
 ```
+
+For `st.text_area()` widgets, to keep the scroll position you cant use `value` param for some reason, so do this:
+
+``` python
+# Initialize session state with default values on first render only.
+if 'some_text' not in st.session_state:
+    st.session_state.some_text = "ON RENDER"
+# Set the default value without using `value`
+if 'some_text_key' not in st.session_state:
+    st.session_state.some_text_key = st.session_state.some_text
+
+# Stable text input widget whose value persists across reruns and page nav.
+some_text = st.text_area(
+    label="Persistent text_input",
+    key='some_text_key',
+    on_change=lambda: setattr(st.session_state, 'some_text', st.session_state.some_text_key)
+)
+st.write(f"You set some_text to: `{some_text}`")
+```
