@@ -25,6 +25,7 @@ def stream_response(messages, message_placeholder):
         content = getattr(response.choices[0].delta, 'content', "")
         response_content += str(content) if content is not None else ""
         message_placeholder.write(response_content + "▌")
+    message_placeholder.write(response_content)
     return response_content
 
 st.title("🤖 Streamlit OpenAI Chat Completion Demo")
