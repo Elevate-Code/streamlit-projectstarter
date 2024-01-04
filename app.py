@@ -1,10 +1,14 @@
 import streamlit as st
+from auth import check_password # if you want to use auth.py for authentication
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+
+# Load environment variables
 load_dotenv()
 
-client = OpenAI()
+# Constants
+# SOME_FILE_PATH = "hello.txt"
 
 st.set_page_config(
     page_title="Streamlit OpenAI Completion",
@@ -27,6 +31,14 @@ def stream_response(messages, message_placeholder):
         message_placeholder.write(response_content + "▌")
     message_placeholder.write(response_content)
     return response_content
+
+
+# Authenticate user (optional, see `auth.py`)
+# if not check_password():
+#     st.stop()
+
+# OpenAI Client Initialization
+client = OpenAI()
 
 st.title("🤖 Streamlit OpenAI Chat Completion Demo")
 
