@@ -9,6 +9,18 @@ To get started with this template, follow all these steps:
 5. Run `python start_project.py` to create template .env files, then delete this script file as it is no longer needed.
 6. ⚠️ Remove this entire section from your README.md file once you've cloned the repository and are ready to proceed with your project.
 
+### Optional: Basic Authentication with `auth.py`
+If your project requires user authentication for a limited number of users, `auth.py` is provided for basic username-password authentication. It's optional and can be removed if not needed.
+1. Add user credentials to `.env` file in the format: `username='password'`
+2. Add this code to the top of `app.py` and all other pages requiring authentication:
+   ```python
+   from auth import check_password
+   if not check_password():
+       st.stop()
+    ```
+
+**🚨 Delete this top section after cloning 🚨**
+
 ---
 
 ## Running & Developing the Project Locally
