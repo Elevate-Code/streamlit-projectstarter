@@ -16,14 +16,16 @@ load_dotenv()
 #        st.stop()
 
 
-# Initialize session state variables
-if 'password_correct' not in st.session_state:
-    st.session_state['password_correct'] = False
-if 'logged_in_user' not in st.session_state:
-    st.session_state['logged_in_user'] = None
+def init_session_state():
+    # Initialize session state variables
+    if 'password_correct' not in st.session_state:
+        st.session_state['password_correct'] = False
+    if 'logged_in_user' not in st.session_state:
+        st.session_state['logged_in_user'] = None
 
 def check_password():
     """Check if the user has a correct password."""
+    init_session_state()
     login_form()
     return st.session_state["password_correct"]
 

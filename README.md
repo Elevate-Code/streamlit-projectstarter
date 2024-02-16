@@ -10,7 +10,9 @@ To get started with this template, follow all these steps:
 6. ⚠️ Remove this entire section from your README.md file once you've cloned the repository and are ready to proceed with your project.
 
 ### Optional: Basic Authentication with `auth.py`
-If your project requires user authentication for a limited number of users, `auth.py` is provided for basic username-password authentication. It's optional and can be removed if not needed.
+
+`auth.py` is provided for basic username-password authentication for a limited number of users. It's modular and can be removed if not needed.
+
 1. Add user credentials to `.env` file in the format: `username='password'`
 2. Add this code to the top of `app.py` and all other pages requiring authentication:
    ```python
@@ -30,7 +32,7 @@ Duplicate and rename the `.env.example` file to `.env` adding your own values.
 
 ### Initial Setup
 Requires Python 3.8 or higher
-- Create a virtual environment using `python -m venv venv`
+- Create a virtual env using `python -m venv venv` or `python3.8 -m venv venv`
 - Run `venv\Scripts\activate` to activate the virtual environment
 - Run `pip install -r requirements.txt` to install all dependencies
 - Run `streamlit run app.py` to start the server
