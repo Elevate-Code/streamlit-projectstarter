@@ -23,10 +23,17 @@ To get started with this template, follow all these steps:
    ```
    cd streamlit-new-project
    ```
+   
+3. ⚠️ Remove the remote connection to the original repository:
+   ```
+   git remote remove origin
+   ```
 
-3. Make the desired changes to get your project to its initial stage, such as deleting certain files and revising others.
+   This step decouples `streamlit-some-project` from `streamlit-projectstarter` by removing the remote connection to the original repository.
 
-4. Clear the git history and create a new initial commit:
+4. Make the desired changes to get your project to its initial stage, such as deleting certain files and revising others.
+
+5. Clear the git history and create a new initial commit:
    ```
    git checkout --orphan latest_branch
    git add -A
@@ -37,11 +44,11 @@ To get started with this template, follow all these steps:
    ```
    This sequence of commands creates a new branch without any history, adds all the files, creates a new initial commit, deletes the old branch, renames the new branch to "main", and force pushes the changes to the remote repository.   
 
-5. Create a new private repository on your personal GitHub account. You can do this by visiting `https://github.com/new` and filling in the repository details. Make sure to set the visibility to "Private".
+6. Create a new private repository on your personal GitHub account. You can do this by visiting `https://github.com/new` and filling in the repository details. Make sure to set the visibility to "Private".
 
    (Optional) If you want to publish the repository under an organization account, create the new private repository on the organization's page instead. For example, if the organization is named `your-org`, you can create the repository by visiting `https://github.com/organizations/your-org/repositories/new`.
 
-6. Update the remote URL of your local repository to point to the new private repository:
+7. Update the remote URL of your local repository to point to the new private repository:
    ```
    git remote set-url origin https://github.com/your-username/streamlit-some-project.git
    ```
@@ -55,7 +62,7 @@ To get started with this template, follow all these steps:
 
    Replace `your-org` with the actual organization name.
 
-7. Push your local changes to the new private repository:
+8. Push your local changes to the new private repository:
    ```
    git push -u origin main
    ```
