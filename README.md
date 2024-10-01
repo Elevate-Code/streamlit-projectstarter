@@ -24,7 +24,7 @@ To get started with this template, follow all the steps in the collapsible secti
    git remote remove origin
    ```
 
-   This step decouples `streamlit-some-project` from `streamlit-projectstarter` by removing the remote connection to the original repository.
+   This step decouples `streamlit-new-project` from `streamlit-projectstarter` by removing the remote connection to the original repository.
 
 4. Make the desired changes to get your project to its initial stage:
 
@@ -46,23 +46,16 @@ To get started with this template, follow all the steps in the collapsible secti
 
 6. Create a new private repository on your personal GitHub account. You can do this by visiting https://github.com/new and filling in the repository details. Make sure to set the visibility to "Private".
 
-   (Optional) If you want to publish the repository under an organization account, create the new private repository on the organization's page instead. For example, if the organization is named `your-org`, you can create the repository by visiting `https://github.com/organizations/your-org/repositories/new`.
+   (Optional) If you want to publish the repository under an organization account, create the new private repository on the organization's page instead.
+   
+   You can create the repository by visiting `https://github.com/organizations/{your-org-name}/repositories/new`.
 
-7. Update the remote URL of your local repository to point to the new private repository:
+8. Set the remote URL of your local repository to point to the new private repository:
    ```
-   git remote add origin https://github.com/your-username/streamlit-some-project.git
-   ```
-
-   Replace `your-username` with your actual GitHub username and `streamlit-some-project` with the actual name you gave to the new repository.
-
-   If you're using an organization account, update the URL accordingly:
-   ```
-   git remote add origin https://github.com/your-org/streamlit-some-project.git
+   git remote add origin https://github.com/{path-copied-from-new-repo}.git
    ```
 
-   Replace `your-org` with the actual organization name.
-
-8. Push your local changes to the new private repository:
+9. Push your local changes to the new private repository:
    ```
    git push -u origin master
    ```
@@ -105,14 +98,14 @@ Requires Python 3.8 or higher
 
 ## Deploying to Railway.app
 - Dashboard > New Project > Deploy from GitHub repo
+- Select Add variables, under **Variables** add `PORT` with value `8501` 
 - If you get a "Invalid service name" error create a blank service and then link the repo under Settings > Source Repo
-- If needed, update project name
-- Click on the service, under **Variables**:
-    - Add `PORT` with value `8501`
-- In the service, under **Settings**:
-    - Environment > Domains, click `Generate Domain`, this will be the public URL, change if needed
-    - Service > Service Name, change to "app" or similar
-    - Service > Start Command, enter `streamlit run app.py`
+- Click `x` to close open service, click Settings and update project name from auto-generated one, use repo name
+- Click on the service (if you see Failed deployment, dont worry about it yet) under **Settings**:
+    - At the top click 📝 to change service name to "app-py" or similar
+    - Networking > Public Networking, click `Generate Domain`, this will be the public URL, change if needed
+    - Deploy > Custom Start Command, enter `streamlit run app.py`
+- You should see a large banned that says "Apply 2 changes", click Deploy, wait about 5 minutes total
 - You should now be able to view the app at the public URL
 - For debugging deployment issues, in the service, under **Deployments**:
     - Click on the latest deployment > `View Logs`
