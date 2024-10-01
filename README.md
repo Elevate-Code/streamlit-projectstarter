@@ -1,13 +1,8 @@
 ## 🚨 Delete this top section after cloning 🚨
 
-To get started with this template, follow all these steps:
+To get started with this template, follow all the steps in the collapsible section below.
 
-1. On this GitHub repo page, in the top right corner above files, click the **Use this template** > **Create a new repo** button.
-2. OR use `git clone https://github.com/Ecom-Analytics-Co/streamlit-projectstarter.git yourprojectname` to clone this repo to your local machine.
-3. Edit the `requirements.txt` file to match the dependencies you need for your project.
-4. Check out the [streamlit_tips.md](streamlit_tips.md) file for how to use the debugger with VS Code or PyCharm and other tips.
-5. Run `python start_project.py` to create template .env files, then delete this script file as it is no longer needed.
-6. ⚠️ Remove this entire section from your README.md file once you've cloned the repository and are ready to proceed with your project.
+⚠️ After cloning, remove this entire section from your README.md file once you've cloned the repository and are ready to proceed with your project.
 
 <details>
 <summary>
@@ -16,7 +11,7 @@ To get started with this template, follow all these steps:
   
 1. Clone the repository with a different name:
    ```
-   git clone https://github.com/Elevate-Code/streamlit-projectstarter.git streamlit-new-project
+   git clone https://github.com/Elevate-Code/streamlit-projectstarter.git {your-project-name}
    ```
 
 2. Change into the cloned repository's directory:
@@ -31,43 +26,48 @@ To get started with this template, follow all these steps:
 
    This step decouples `streamlit-some-project` from `streamlit-projectstarter` by removing the remote connection to the original repository.
 
-4. Make the desired changes to get your project to its initial stage, such as deleting certain files and revising others.
+4. Make the desired changes to get your project to its initial stage:
+
+   - Edit the `requirements.txt` file to match the initial dependencies you need for your project.
+   - Check out the [streamlit_tips.md](streamlit_tips.md) file for how to use the debugger with VS Code or PyCharm and other tips.
+   - Create a virtual environment using `python -m venv venv`
+   - Run `venv\Scripts\activate` to activate the virtual environment
+   - Run `python start_project.py` to create template .env files, then delete this script file as it is no longer needed.
 
 5. Clear the git history and create a new initial commit:
    ```
    git checkout --orphan latest_branch
    git add -A
-   git commit -am "Initial commit"
+   git commit -m "Initial commit"
    git branch -D master
    git branch -m master
-   git push -f origin master
    ```
-   This sequence of commands creates a new branch without any history, adds all the files, creates a new initial commit, deletes the old branch, renames the new branch to "main", and force pushes the changes to the remote repository.   
+   This sequence of commands creates a new branch without any history, adds all the files, creates a new initial commit, deletes the old branch, and renames the new branch to "master"(?).
 
-6. Create a new private repository on your personal GitHub account. You can do this by visiting `https://github.com/new` and filling in the repository details. Make sure to set the visibility to "Private".
+6. Create a new private repository on your personal GitHub account. You can do this by visiting https://github.com/new and filling in the repository details. Make sure to set the visibility to "Private".
 
    (Optional) If you want to publish the repository under an organization account, create the new private repository on the organization's page instead. For example, if the organization is named `your-org`, you can create the repository by visiting `https://github.com/organizations/your-org/repositories/new`.
 
 7. Update the remote URL of your local repository to point to the new private repository:
    ```
-   git remote set-url origin https://github.com/your-username/streamlit-some-project.git
+   git remote add origin https://github.com/your-username/streamlit-some-project.git
    ```
 
    Replace `your-username` with your actual GitHub username and `streamlit-some-project` with the actual name you gave to the new repository.
 
    If you're using an organization account, update the URL accordingly:
    ```
-   git remote set-url origin https://github.com/your-org/streamlit-some-project.git
+   git remote add origin https://github.com/your-org/streamlit-some-project.git
    ```
 
    Replace `your-org` with the actual organization name.
 
 8. Push your local changes to the new private repository:
    ```
-   git push -u origin main
+   git push -u origin master
    ```
 
-   This will push your local changes to the new private repository under your personal account or the specified organization account.
+   🔁 Refresh the GitHub page, and you should see the code from the template repository in your new private repository.
 </details>
 
 ### Optional: Basic Authentication with `auth.py`
@@ -82,9 +82,7 @@ To get started with this template, follow all these steps:
        st.stop()
     ```
 
-**🚨 Delete this top section after cloning 🚨**
-
----
+**🚨 /END Delete this top section after cloning 🚨**
 
 ## Running & Developing the Project Locally
 
@@ -93,15 +91,17 @@ Duplicate and rename the `.env.example` file to `.env` adding your own values.
 
 ### Initial Setup
 Requires Python 3.8 or higher
-- Create a virtual env using `python -m venv venv` or `python3.8 -m venv venv`
-- Run `venv\Scripts\activate` to activate the virtual environment
+- Create a virtual environment using `python -m venv venv`
+- Always run `venv\Scripts\activate` to activate the virtual environment
 - Run `pip install -r requirements.txt` to install all dependencies
 - Run `streamlit run app.py` to start the server
 
-### Subsequent Runs 🚀
+### Ongoing Development
 - Run `venv\Scripts\activate` to activate the virtual environment
+- ⚠️ Always activate the virtual environment before running any commands
 - Run `streamlit run app.py` to start the server
-- (optionally) `pip install -r requirements.txt` if you encounter a `ModuleNotFoundError`
+- To check for package updates, run `pip list --outdated`
+- To add new packages, first add it to `requirements.txt` then run `pip install -r requirements.txt`
 
 ## Deploying to Railway.app
 - Dashboard > New Project > Deploy from GitHub repo
