@@ -18,6 +18,7 @@ st.set_page_config(
 
 # Authenticate user (optional, see `auth.py`)
 # if not check_password():
+#     st.warning("🔒 Please log in using the sidebar.")
 #     st.stop()
 
 st.success("👈 See various example apps in the sidebar")

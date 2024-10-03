@@ -74,7 +74,8 @@ To get started with this template, follow all the steps in the collapsible secti
    ```python
    from auth import check_password
    if not check_password():
-       st.stop()
+      st.warning("🔒 Please log in using the sidebar.")
+      st.stop()
     ```
 
 **🚨 /END Delete this top section after cloning 🚨**

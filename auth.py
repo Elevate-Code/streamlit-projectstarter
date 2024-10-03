@@ -11,9 +11,10 @@ load_dotenv()
 # 1. Create an .env file in the root directory of your application.
 # 2. In that file, add users using the format: username='password' (one per line).
 # 3. At the beginning of your app.py file (and all pages requiring authentication), insert these lines:
-#    from auth import check_password
-#    if not check_password():
-#        st.stop()
+# from auth import check_password
+# if not check_password():
+#     st.warning("🔒 Please log in using the sidebar.")
+#     st.stop()
 
 
 def init_session_state():
