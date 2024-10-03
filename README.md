@@ -11,7 +11,7 @@ To get started with this template, follow all the steps in the collapsible secti
   
 1. Clone the repository with a different name:
    ```
-   git clone https://github.com/Elevate-Code/streamlit-projectstarter.git {your-project-name}
+   git clone https://github.com/Elevate-Code/streamlit-projectstarter.git {st-your-project-name}
    ```
 
 2. Change into the cloned repository's directory:
@@ -32,6 +32,8 @@ To get started with this template, follow all the steps in the collapsible secti
    - Check out the [streamlit_tips.md](streamlit_tips.md) file for how to use the debugger with VS Code or PyCharm and other tips.
    - Create a virtual environment using `python -m venv venv`
    - Run `venv\Scripts\activate` to activate the virtual environment
+   - Run `pip install -r requirements.txt` to install all dependencies
+   - To check for newer packages than what is locked in `requirements.txt`, run `pip list --outdated`
    - Run `python start_project.py` to create template .env files, then delete this script file as it is no longer needed.
 
 5. Clear the git history and create a new initial commit:
@@ -42,7 +44,7 @@ To get started with this template, follow all the steps in the collapsible secti
    git branch -D master
    git branch -m master
    ```
-   This sequence of commands creates a new branch without any history, adds all the files, creates a new initial commit, deletes the old branch, and renames the new branch to "master"(?).
+   This sequence of commands creates a new branch without any history, adds all the files, creates a new initial commit, deletes the old master branch, and renames the new branch (latest_branch) to 'master'.
 
 6. Create a new private repository on your personal GitHub account. You can do this by visiting https://github.com/new and filling in the repository details. Make sure to set the visibility to "Private".
 
@@ -63,7 +65,7 @@ To get started with this template, follow all the steps in the collapsible secti
    🔁 Refresh the GitHub page, and you should see the code from the template repository in your new private repository.
 </details>
 
-### Optional: Basic Authentication with `auth.py`
+### (Optional) Basic Authentication with `auth.py`
 
 `auth.py` is provided for basic username-password authentication for a limited number of users. It's modular and can be removed if not needed.
 
