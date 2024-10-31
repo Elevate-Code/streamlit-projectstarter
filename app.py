@@ -1,6 +1,7 @@
 import streamlit as st
 from auth import check_password # if you want to use auth.py for authentication
 from dotenv import load_dotenv
+from build_info import BUILD_TIMESTAMP
 import os
 
 # Load environment variables
@@ -21,6 +22,8 @@ st.set_page_config(
 #     st.warning("🔒 Please log in using the sidebar.")
 #     st.stop()
 
+st.markdown(f"<div style='text-align: center; color: gray; font-size: 0.8em; margin: -1em 0 -1em 0; line-height: 1;'>App Version: {BUILD_TIMESTAMP}</div>", unsafe_allow_html=True)
+
 st.success("👈 See various example apps in the sidebar")
 
 st.title("🛬 App Landing Page")
@@ -34,7 +37,7 @@ Remember that each reruns takes place in a blank slate: no variables are passed 
 
 `st.session_state` is a special variable that persists across reruns of your script.
 
-It is a dictionary that is initialized once when your script is first run, and can be accessed, updated, 
+It is a dictionary that is initialized once when your script is first run, and can be accessed, updated,
 and cleared across reruns.
 """, icon="ℹ️")
 
