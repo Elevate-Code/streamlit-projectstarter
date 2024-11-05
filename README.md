@@ -8,7 +8,7 @@ To get started with this template, follow all the steps in the collapsible secti
 <summary>
 <b>🔽 Click to expand the steps for cloning and customizing the project</b>
 </summary>
-  
+
 1. Clone the repository with a different name:
    ```
    git clone https://github.com/Elevate-Code/streamlit-projectstarter.git {st-your-project-name}
@@ -18,7 +18,7 @@ To get started with this template, follow all the steps in the collapsible secti
    ```
    cd streamlit-new-project
    ```
-   
+
 3. ⚠️ Remove the remote connection to the original repository:
    ```
    git remote remove origin
@@ -32,6 +32,7 @@ To get started with this template, follow all the steps in the collapsible secti
    - Check out the [streamlit_tips.md](streamlit_tips.md) file for how to use the debugger with VS Code or PyCharm and other tips.
    - Create a virtual environment using `python -m venv venv`
    - Run `venv\Scripts\activate` to activate the virtual environment
+   - Run `python -m pip install --upgrade pip` to ensure pip is up to date
    - Run `pip install -r requirements.txt` to install all dependencies
    - To check for newer packages than what is locked in `requirements.txt`, run `pip list --outdated`
    - Run `python start_project.py` to create template .env files, then delete this script file as it is no longer needed.
@@ -49,7 +50,7 @@ To get started with this template, follow all the steps in the collapsible secti
 6. Create a new private repository on your personal GitHub account. You can do this by visiting https://github.com/new and filling in the repository details. Make sure to set the visibility to "Private".
 
    (Optional) If you want to publish the repository under an organization account, create the new private repository on the organization's page instead.
-   
+
    You can create the repository by visiting `https://github.com/organizations/{your-org-name}/repositories/new`.
 
 8. Set the remote URL of your local repository to point to the new private repository:
@@ -86,9 +87,10 @@ To get started with this template, follow all the steps in the collapsible secti
 Duplicate and rename the `.env.example` file to `.env` adding your own values.
 
 ### Initial Setup
-Requires Python 3.8 or higher
+Requires Python 3.8 or higher (check with `python --version`)
 - Create a virtual environment using `python -m venv venv`
 - Always run `venv\Scripts\activate` to activate the virtual environment
+- Run `python -m pip install --upgrade pip` to ensure pip is up to date
 - Run `pip install -r requirements.txt` to install all dependencies
 - Run `streamlit run app.py` to start the server
 
@@ -100,17 +102,23 @@ Requires Python 3.8 or higher
 - To add new packages, first add it to `requirements.txt` then run `pip install -r requirements.txt`
 
 ## Deploying to Railway.app
-- Dashboard > New Project > Deploy from GitHub repo
+- [Dashboard](https://railway.app/dashboard) > New Project > Deploy from GitHub repo > Add variables
 - If you get a "Invalid service name" error create a blank service and then link the repo under Settings > Source Repo
 - Select Add variables, under **Variables**:
     - Add `PORT` with value `8501`
-    - Add other environment variables from `.env` file
-- Click `x` to close open service, click Settings and update project name from auto-generated one, use repo name
-- Click on the service (if you see Failed deployment, dont worry about it yet) under **Settings**:
+- If you need a database, add a Postgres service:
+    - Create > Postgres
+    - View the DATABASE_PUBLIC_URL in Variables > Postgres, use this in your local `.env` file
+    - Connect other services to the Postgres service with PG_DATABASE_URL=${{Postgres.DATABASE_PUBLIC_URL}}
+- Click `x` to close open service, click Settings and:
+    - Update project name from auto-generated one, use repo name
+    - Under **Shared Variables**, add your other variables from `.env` file
+- Click on the service under **Settings**:
+    - Note: If you see "Failed deployment", dont worry about it yet.
     - At the top click 📝 to change service name to "streamlit-app" or similar
-    - Networking > Public Networking, click `Generate Domain`, port 8502, this will be the public URL, change if needed
+    - Settings > Networking > Public Networking, click `Generate Domain`, port 8502, this will be the public URL, change if needed
     - Deploy > Custom Start Command, enter `streamlit run app.py`
-- You should see a large banned that says "Apply 2 changes", click Deploy, takes about 5 minutes
+- You should see a large banned that says "Apply n changes", click Deploy; Takes about 5 minutes
 - You should now be able to view the app at the public URL
 - For debugging deployment issues, in the service, under **Deployments**:
     - Click on the latest deployment > `View Logs`
