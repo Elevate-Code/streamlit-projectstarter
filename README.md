@@ -123,3 +123,43 @@ Requires Python 3.8 or higher (check with `python --version`)
 - For debugging deployment issues, in the service, under **Deployments**:
     - Click on the latest deployment > `View Logs`
     - Check `Build Logs` and `Deploy Logs` for errors
+
+
+### Adding a Database
+- TODO: This section may be incomplete.
+- Create a Postgres service
+- View the DATABASE_PUBLIC_URL in Variables > Postgres, use this in your local `.env` file
+- Connect other services to the Postgres service with PG_DATABASE_URL=${{Postgres.DATABASE_PUBLIC_URL}}
+
+
+### Connecting to Railway Database with DBeaver
+
+1. In DBeaver: New Database Connection > PostgreSQL > Connect by URL
+
+2. Get the connection details from copying the Railway `DATABASE_PUBLIC_URL`:
+   ```
+   postgresql://${PGUSER}:${POSTGRES_PASSWORD}@${RAILWAY_TCP_PROXY_DOMAIN}:${RAILWAY_TCP_PROXY_PORT}/${PGDATABASE}
+   ```
+   Example:
+   ```
+   postgresql://postgres:abc123...@autorack.proxy.rlwy.net:59123/railway
+   ```
+
+3. Configure the connection:
+   - **JDBC URL**: Convert the Railway URL to JDBC format:
+     ```
+     jdbc:postgresql://[RAILWAY_TCP_PROXY_DOMAIN]:[RAILWAY_TCP_PROXY_PORT]/[PGDATABASE]
+     ```
+     Example:
+     ```
+     jdbc:postgresql://autorack.proxy.rlwy.net:59123/railway
+     ```
+   - **Username**: Use the `PGUSER` value from Railway
+   - **Password**: Use the `POSTGRES_PASSWORD` value from Railway
+   - **General** > **Connection name**: Use your project name for clarity
+
+4. Your database tables will be located under:
+   ```
+   {Connection Name} > Databases > railway > Schemas > Public > Tables
+   ```
+
