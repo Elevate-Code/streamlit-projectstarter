@@ -116,9 +116,11 @@ Requires Python 3.8 or higher (check with `python --version`)
 - Click on the service under **Settings**:
     - Note: If you see "Failed deployment", dont worry about it yet.
     - At the top click 📝 to change service name to "streamlit-app" or similar
-    - Settings > Networking > Public Networking, click `Generate Domain`, port 8502, this will be the public URL, change if needed
+    - Settings > Networking > Public Networking, click `Generate Domain`, port 8501 (or 8502?)
+    - While you're editing public networking, you should change the public URL to something more user-friendly
+    - If you have an issue with ports try the "magic suggestion"
     - Deploy > Custom Start Command, enter `streamlit run app.py`
-- You should see a large banned that says "Apply n changes", click Deploy; Takes about 5 minutes
+- You should see a large banner that says "Apply n changes", click Deploy; Takes about 5 minutes
 - You should now be able to view the app at the public URL
 - For debugging deployment issues, in the service, under **Deployments**:
     - Click on the latest deployment > `View Logs`
@@ -162,4 +164,3 @@ Requires Python 3.8 or higher (check with `python --version`)
    ```
    {Connection Name} > Databases > railway > Schemas > Public > Tables
    ```
-
