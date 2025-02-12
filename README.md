@@ -125,9 +125,11 @@ Requires `uv` CLI tool (https://docs.astral.sh/uv/getting-started/#installation)
 - Click on the service under **Settings**:
     - Note: If you see "Failed deployment", dont worry about it yet.
     - At the top click 📝 to change service name to "streamlit-app" or similar
-    - Settings > Networking > Public Networking, click `Generate Domain`, port 8502, this will be the public URL, change if needed
+    - Settings > Networking > Public Networking, click `Generate Domain`, port 8501 (or 8502?)
+    - While you're editing public networking, you should change the public URL to something more user-friendly
+    - If you have an issue with ports try the "magic suggestion"
     - Deploy > Custom Start Command, enter `python scripts/generate_secrets.py && streamlit run app.py`
-- You should see a large banned that says "Apply n changes", click Deploy; Takes about 5 minutes
+- You should see a large banner that says "Apply n changes", click Deploy; Takes about 5 minutes
 - You should now be able to view the app at the public URL
 - For debugging deployment issues, in the service, under **Deployments**:
     - Click on the latest deployment > `View Logs`
@@ -170,16 +172,3 @@ Requires `uv` CLI tool (https://docs.astral.sh/uv/getting-started/#installation)
    {Connection Name} > Databases > railway > Schemas > Public > Tables
    ```
 
-### Railway CLI for Debugging
-
-https://docs.railway.com/guides/cli
-
-Verify using `railway whoami`
-
-`railway link` OR `railway link your_railway_project_id` to associate a project and environment with your current directory
-
-`railway status` to check that you are in the correct project and environment
-
-`railway run <your command>` to run a command in the current environment
-
-`railway run pip install --upgrade --no-cache-dir -r requirements.txt` to upgrade dependencies to their latest compatible versions
