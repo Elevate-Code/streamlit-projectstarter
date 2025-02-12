@@ -4,8 +4,13 @@ python-dotenv==1.0.0
 pre-commit==4.0.1
 
 # Streamlit release notes: https://docs.streamlit.io/develop/quick-reference/release-notes
-streamlit==1.39.0
-pandas==2.2.3 # optional, used for Streamlit tables
+streamlit==1.42.0
+pandas==2.2.3  # for data manipulation and Streamlit tables
 
-openai==1.30.1 # optional, for chat UI demo purposes
-tiktoken==0.7.0 # optional, for counting tokens, pricing
+# Authentication
+authlib>=1.3.2  # required for Streamlit authentication
+toml==0.10.2  # for secrets.toml file handling
+
+# Optional packages
+openai==1.30.1  # optional, for chat UI demo purposes
+tiktoken==0.7.0  # optional, for counting tokens, pricing

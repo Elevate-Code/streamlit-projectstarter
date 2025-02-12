@@ -1,65 +1,92 @@
-import hmac
 import streamlit as st
-from dotenv import load_dotenv
+from functools import wraps
+from typing import Optional, List, Callable
 import os
 
-# Load environment variables
-load_dotenv()
+"""
+Currently, in is_allowed_user(), we have this logic flow:
+1. First check if the user is in the whitelist (allowed_users)
+2. If not in whitelist, check if their domain is allowed (allowed_domains)
+3. Access is granted if either condition is true
 
+In the future, we could extend this to check a database instead of environment variables.
 
-# ⚠️ Instructions for using auth.py for authentication in a Streamlit app with a limited user base:
-# 1. Create an .env file in the root directory of your application.
-# 2. In that file, add users using the format: username='password' (one per line).
-# 3. At the beginning of your app.py file (and all pages requiring authentication), insert these lines:
-# from auth import check_password
-# if not check_password():
-#     st.warning("🔒 Please log in using the sidebar.")
-#     st.stop()
+To use role-based access in the future, we could do something like:
+```
+@require_auth(roles=["admin"])
+def admin_only_page():
+    st.write("Admin only content")
 
+# Or directly in a page
+check_auth(required_roles=["admin", "manager"])
+```
+"""
 
-def init_session_state():
-    # Initialize session state variables
-    if 'password_correct' not in st.session_state:
-        st.session_state['password_correct'] = False
-    if 'logged_in_user' not in st.session_state:
-        st.session_state['logged_in_user'] = None
+def get_env_list(env_var: str) -> list:
+    """Convert comma-separated environment variable to list, returning empty list if not set."""
+    return os.getenv(env_var, "").split(",") if os.getenv(env_var) else []
 
-def check_password():
-    """Check if the user has a correct password."""
-    init_session_state()
-    login_form()
-    return st.session_state["password_correct"]
+def is_allowed_user(email: str) -> bool:
+    """Check if user is allowed based on email domain or specific whitelist."""
+    if not email:
+        return False
 
-def login_form():
-    """Display a form for user login in the sidebar."""
+    # Get allowed domains and users from environment variables
+    allowed_domains = get_env_list("STREAMLIT_AUTH_ALLOWED_DOMAINS")
+    allowed_users = get_env_list("STREAMLIT_AUTH_ALLOWED_EMAILS")
+
+    # Check whitelist first
+    if email.lower() in (user.lower() for user in allowed_users):
+        return True
+
+    # Then check domain
+    domain = email.split('@')[-1].lower()
+    return domain in (d.lower() for d in allowed_domains)
+
+def check_auth(required_roles: Optional[List[str]] = None) -> None:
+    """Check authentication and optionally roles, stopping execution if unauthorized.
+
+    Args:
+        required_roles: Optional list of roles required to access the page/component
+    """
+    if not st.experimental_user.is_logged_in:
+        with st.sidebar:
+            st.button("🔐 Login with Google", on_click=st.login, use_container_width=True)
+            st.warning("Please log in to continue")
+        st.stop()
+
+    # Check if user is allowed
+    if not is_allowed_user(st.experimental_user.email):
+        st.error("🚫 You are not authorized to access this application - please contact the admin")
+        with st.sidebar:
+            st.button("🚪 Logout", on_click=st.logout, use_container_width=True)
+        st.stop()
+
+    # Future role checking logic here
+    # if required_roles and not has_required_roles(required_roles):
+    #     st.error("You don't have permission to access this page")
+    #     st.stop()
+
+def render_user_info() -> None:
+    """Render current user info and logout button in sidebar."""
     with st.sidebar:
-        if st.session_state["password_correct"]:
-            st.write(f"Logged in as: `{st.session_state['logged_in_user']}`")
-            if st.button("Logout"):
-                st.session_state["password_correct"] = False
-                st.session_state["logged_in_user"] = None
-                st.rerun()  # Rerun the whole app.
-        else:
-            with st.form("Credentials"):
-                st.text_input("Username", key="username")
-                st.text_input("Password", type="password", key="password")
-                submit_button = st.form_submit_button("Log in")
+        st.write(f"Logged in as: {st.experimental_user.email}")
+        st.button("🚪 Logout", on_click=st.logout, use_container_width=True)
 
-            if submit_button:
-                password_entered()
+def require_auth(func: Optional[Callable] = None, *, roles: Optional[List[str]] = None) -> Callable:
+    """Decorator to require authentication and optionally specific roles.
 
-def password_entered():
-    """Validate the entered password."""
-    username = st.session_state.get("username")
-    entered_password = st.session_state.get("password", "")
-    expected_password = os.getenv(username)
+    Args:
+        func: The function to wrap
+        roles: Optional list of required roles
+    """
+    def decorator(f: Callable) -> Callable:
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            check_auth(roles)
+            return f(*args, **kwargs)
+        return wrapper
 
-    if expected_password and hmac.compare_digest(entered_password, expected_password):
-        st.session_state["password_correct"] = True
-        st.session_state["logged_in_user"] = username
-        st.toast(f"🔒 Logged in as: {username}")
-        del st.session_state["password"]  # Don't store the password.
-        st.rerun()  # Rerun the whole app.
-    else:
-        st.session_state["password_correct"] = False
-        st.error("😕 User not known or password incorrect")
+    if func is None:
+        return decorator
+    return decorator(func)

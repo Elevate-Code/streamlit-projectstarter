@@ -66,18 +66,31 @@ To get started with this template, follow all the steps in the collapsible secti
    🔁 Refresh the GitHub page, and you should see the code from the template repository in your new private repository.
 </details>
 
-### (Optional) Basic Authentication with `auth.py`
+### Authentication with Google OAuth
 
-`auth.py` is provided for basic username-password authentication for a limited number of users. It's modular and can be removed if not needed.
+This application uses Streamlit's native Google OAuth authentication for secure access control. For detailed setup instructions, see [Authentication Documentation](docs/authentication.md).
 
-1. Add user credentials to `.env` file in the format: `username='password'`
-2. Add this code to the top of `app.py` and all other pages requiring authentication:
+To enable authentication in your pages:
+
+1. Add this code to the top of `app.py` and all other pages requiring authentication:
    ```python
-   from auth import check_password
-   if not check_password():
-      st.warning("🔒 Please log in using the sidebar.")
-      st.stop()
-    ```
+   from auth import check_auth, render_user_info
+
+   # Check authentication
+   check_auth()
+
+   # Optional: Show user info in sidebar
+   render_user_info()
+   ```
+
+2. For pages that need role-based access (future feature):
+   ```python
+   from auth import require_auth
+
+   @require_auth(roles=["admin"])
+   def admin_only_page():
+       st.write("Admin only content")
+   ```
 
 **🚨 /END Delete this top section after cloning 🚨**
 
@@ -88,28 +101,24 @@ Duplicate and rename the `.env.example` file to `.env` adding your own values.
 
 ### Initial Setup
 Requires Python 3.8 or higher (check with `python --version`)
-- Create a virtual environment using `python -m venv venv`
-- Always run `venv\Scripts\activate` to activate the virtual environment
-- Run `python -m pip install --upgrade pip` to ensure pip is up to date
-- Run `pip install -r requirements.txt` to install all dependencies
+Requires `uv` CLI tool (https://docs.astral.sh/uv/getting-started/#installation)
+- Create a virtual environment using `uv venv --python ">=3.8"`
+- Always run `.venv\Scripts\activate` to activate the virtual environment (setup your IDE to do it automatically)
+- Run `uv pip install -r requirements.txt` to install all dependencies
+- Run `python scripts/generate_secrets.py` to generate the Streamlit secrets file
 - Run `streamlit run app.py` to start the server
 
 ### Ongoing Development
-- Run `venv\Scripts\activate` to activate the virtual environment
+- Run `.venv\Scripts\activate` to activate the virtual environment
 - ⚠️ Always activate the virtual environment before running any commands
 - Run `streamlit run app.py` to start the server
-- To check for package updates, run `pip list --outdated`
-- To add new packages, first add it to `requirements.txt` then run `pip install -r requirements.txt`
+- To check for package updates, run `pip list --outdated` (may take a while)
+- To add new packages, first add it to `requirements.txt` then run `uv pip sync requirements.txt`
 
 ## Deploying to Railway.app
 - [Dashboard](https://railway.app/dashboard) > New Project > Deploy from GitHub repo > Add variables
-- If you get a "Invalid service name" error create a blank service and then link the repo under Settings > Source Repo
 - Select Add variables, under **Variables**:
     - Add `PORT` with value `8501`
-- If you need a database, add a Postgres service:
-    - Create > Postgres
-    - View the DATABASE_PUBLIC_URL in Variables > Postgres, use this in your local `.env` file
-    - Connect other services to the Postgres service with PG_DATABASE_URL=${{Postgres.DATABASE_PUBLIC_URL}}
 - Click `x` to close open service, click Settings and:
     - Update project name from auto-generated one, use repo name
     - Under **Shared Variables**, add your other variables from `.env` file
@@ -117,16 +126,14 @@ Requires Python 3.8 or higher (check with `python --version`)
     - Note: If you see "Failed deployment", dont worry about it yet.
     - At the top click 📝 to change service name to "streamlit-app" or similar
     - Settings > Networking > Public Networking, click `Generate Domain`, port 8502, this will be the public URL, change if needed
-    - Deploy > Custom Start Command, enter `streamlit run app.py`
+    - Deploy > Custom Start Command, enter `python scripts/generate_secrets.py && streamlit run app.py`
 - You should see a large banned that says "Apply n changes", click Deploy; Takes about 5 minutes
 - You should now be able to view the app at the public URL
 - For debugging deployment issues, in the service, under **Deployments**:
     - Click on the latest deployment > `View Logs`
     - Check `Build Logs` and `Deploy Logs` for errors
 
-
 ### Adding a Database
-- TODO: This section may be incomplete.
 - Create a Postgres service
 - View the DATABASE_PUBLIC_URL in Variables > Postgres, use this in your local `.env` file
 - Connect other services to the Postgres service with PG_DATABASE_URL=${{Postgres.DATABASE_PUBLIC_URL}}
@@ -163,3 +170,16 @@ Requires Python 3.8 or higher (check with `python --version`)
    {Connection Name} > Databases > railway > Schemas > Public > Tables
    ```
 
+### Railway CLI for Debugging
+
+https://docs.railway.com/guides/cli
+
+Verify using `railway whoami`
+
+`railway link` OR `railway link your_railway_project_id` to associate a project and environment with your current directory
+
+`railway status` to check that you are in the correct project and environment
+
+`railway run <your command>` to run a command in the current environment
+
+`railway run pip install --upgrade --no-cache-dir -r requirements.txt` to upgrade dependencies to their latest compatible versions
