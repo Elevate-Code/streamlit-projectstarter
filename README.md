@@ -147,6 +147,7 @@ Migrating from your personal to organization repo:
 - Click on the service, then under **Settings**:
     - Note: If you see a "Failed build/deployment", this is expected at this stage.
     - Hover over the service name and click 📝 to change it to "streamlit-app" or similar
+    - Under Variables add shared project variables, and service-specific variables from `.env`
     - Settings > Networking > Public Networking, click `Generate Domain`, port 8501
     - Change the public URL to something more user-friendly, or same as the repo name
     - If you have an issue with ports try the "magic suggestion"
