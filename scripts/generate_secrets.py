@@ -16,10 +16,7 @@ def generate_secrets() -> Dict[str, Any]:
             "cookie_secret": os.getenv("STREAMLIT_AUTH_COOKIE_SECRET"),
             "client_id": os.getenv("STREAMLIT_AUTH_CLIENT_ID"),
             "client_secret": os.getenv("STREAMLIT_AUTH_CLIENT_SECRET"),
-            "server_metadata_url": os.getenv(
-                "STREAMLIT_AUTH_SERVER_METADATA_URL",
-                "https://accounts.google.com/.well-known/openid-configuration"
-            )
+            "server_metadata_url": os.getenv("STREAMLIT_AUTH_SERVER_METADATA_URL")
         }
     }
 

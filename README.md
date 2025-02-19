@@ -115,25 +115,50 @@ Requires `uv` CLI tool (https://docs.astral.sh/uv/getting-started/#installation)
 - To check for package updates, run `pip list --outdated` (may take a while)
 - To add new packages, first add it to `requirements.txt` then run `uv pip sync requirements.txt`
 
+### Authentication
+
+This application uses Streamlit's native OAuth2 support for authentication. For detailed setup instructions, see [Authentication Documentation](docs/authentication.md).
+
 ## Deploying to Railway.app
+
+### Prerequisite: Publish Repo to Organization GitHub
+
+When you when I press "Publish to Github" the only options there appear are private and public repositories.
+
+Recommended workflow with GitHub CLI:
+- Ensure GitHub CLI is installed (https://cli.github.com/) and login via `gh auth login`
+- Make sure you are in the root directory of the project
+- `gh repo create Elevate-Code/your-repo-name --source . --private`
+
+Or using GitHub desktop: Just click the "publish repository" and choose the organization to publish under.
+
+Migrating from your personal to organization repo:
+- Go to repository Settings > Transfer ownership to move it to Elevate-Code organization
+- `git remote set-url origin https://github.com/Elevate-Code/your-repo-name`
+
+### Railway.app Setup
+
 - [Dashboard](https://railway.app/dashboard) > New Project > Deploy from GitHub repo > Add variables
 - Select Add variables, under **Variables**:
     - Add `PORT` with value `8501`
-- Click `x` to close open service, click Settings and:
-    - Update project name from auto-generated one, use repo name
-    - Under **Shared Variables**, add your other variables from `.env` file
-- Click on the service under **Settings**:
-    - Note: If you see "Failed deployment", dont worry about it yet.
-    - At the top click 📝 to change service name to "streamlit-app" or similar
-    - Settings > Networking > Public Networking, click `Generate Domain`, port 8501 (or 8502?)
-    - While you're editing public networking, you should change the public URL to something more user-friendly
+- Click `x` to close the open service, click project `Settings` and:
+    - Update project name from auto-generated one, use repo name, click `Update`
+    - (optional) Under **Shared Variables**, add variables from `.env` that might be used by multiple services
+- Click on the service, then under **Settings**:
+    - Note: If you see a "Failed build/deployment", this is expected at this stage.
+    - Hover over the service name and click 📝 to change it to "streamlit-app" or similar
+    - Settings > Networking > Public Networking, click `Generate Domain`, port 8501
+    - Change the public URL to something more user-friendly, or same as the repo name
     - If you have an issue with ports try the "magic suggestion"
-    - Deploy > Custom Start Command, enter `python scripts/generate_secrets.py && streamlit run app.py`
-- You should see a large banner that says "Apply n changes", click Deploy; Takes about 5 minutes
+    - Deploy > Custom Start Command, enter:
+      - 🔓 Without auth: `streamlit run app.py`
+      - 🔒 With auth: `python scripts/generate_secrets.py && streamlit run app.py`
+- You should see a large banner that says "Apply n changes", click Deploy (takes about 5 minutes)
 - You should now be able to view the app at the public URL
 - For debugging deployment issues, in the service, under **Deployments**:
     - Click on the latest deployment > `View Logs`
     - Check `Build Logs` and `Deploy Logs` for errors
+    - If it works fine locally but not on Railway, you can use the [Railway CLI](https://docs.railway.com/guides/cli) to debug
 
 ### Adding a Database
 - Create a Postgres service
