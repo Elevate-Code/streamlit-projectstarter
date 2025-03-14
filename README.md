@@ -123,16 +123,17 @@ This application uses Streamlit's native OAuth2 support for authentication. For 
 
 ### Prerequisite: Publish Repo to Organization GitHub
 
-When you when I press "Publish to Github" the only options there appear are private and public repositories.
-
-Recommended workflow with GitHub CLI:
-- Ensure GitHub CLI is installed (https://cli.github.com/) and login via `gh auth login`
-- Make sure you are in the root directory of the project
+Using GitHub CLI (https://cli.github.com/):
+- `cd` to the root directory of the project
 - `gh repo create Elevate-Code/your-repo-name --source . --private`
 
-Or using GitHub desktop: Just click the "publish repository" and choose the organization to publish under.
+Using GitHub desktop (https://desktop.github.com/download/):
+- File > Add local repository
+- Click "Publish repository" and choose the organization to publish under.
+- Click Publish repository button
+- Repository > View on GitHub to confirm
 
-Migrating from your personal to organization repo:
+Migrating repo from your personal account to organization:
 - Go to repository Settings > Transfer ownership to move it to Elevate-Code organization
 - `git remote set-url origin https://github.com/Elevate-Code/your-repo-name`
 
