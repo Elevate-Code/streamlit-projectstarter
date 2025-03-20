@@ -1,7 +1,5 @@
-# for maintaining requirements.txt; `pipreqs --encoding=utf8 --print`
-pipreqs==0.5.0
+# for adding new packages, add a locked version here and then run `uv pip install -r requirements.txt`
 python-dotenv==1.0.0
-pre-commit==4.0.1
 
 # Streamlit release notes: https://docs.streamlit.io/develop/quick-reference/release-notes
 streamlit==1.42.0
