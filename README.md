@@ -66,30 +66,30 @@ To get started with this template, follow all the steps in the collapsible secti
    🔁 Refresh the GitHub page, and you should see the code from the template repository in your new private repository.
 </details>
 
-### Authentication with Google OAuth
+### Authentication
 
-This application uses Streamlit's native Google OAuth authentication for secure access control. For detailed setup instructions, see [Authentication Documentation](docs/authentication.md).
+This application uses Streamlit's native user authentication capabilities. For detailed setup instructions for providers like **Auth0** and **Google OAuth**, see [Authentication Documentation](docs/authentication.md).
 
-To enable authentication in your pages:
+To enable authentication in your page views (located in the `views/` directory):
 
-1. Add this code to the top of `app.py` and all other pages requiring authentication:
+1. Add this code near the top of each view file (e.g., `views/your_page.py`) requiring authentication:
    ```python
-   from auth import check_auth, render_user_info
+   from components.auth import check_auth
 
-   # Check authentication
+   # Check authentication - will stop execution if not logged in
    check_auth()
-
-   # Optional: Show user info in sidebar
-   render_user_info()
    ```
 
-2. For pages that need role-based access (future feature):
+2. Role-based access control is **not implemented** but could be added to `components/auth.py` in the future. The decorator usage might look like this:
    ```python
-   from auth import require_auth
+   from components.auth import require_auth
 
    @require_auth(roles=["admin"])
-   def admin_only_page():
+   def admin_only_logic():
        st.write("Admin only content")
+
+   # In your page view:
+   admin_only_logic()
    ```
 
 **🚨 /END Delete this top section after cloning 🚨**

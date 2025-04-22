@@ -1,7 +1,9 @@
-import streamlit as st
-from auth import check_password # if you want to use auth.py for authentication
-from dotenv import load_dotenv
 import os
+
+import streamlit as st
+from dotenv import load_dotenv
+
+from components.auth import check_auth, render_user_info
 
 # Load environment variables
 load_dotenv()
@@ -15,38 +17,19 @@ st.set_page_config(
     layout="wide" # "centered" constrains page content to a fixed width; "wide" uses the entire screen
 )
 
+# Check authentication first (optional, see `auth.py`) - will stop execution if not authenticated
+# check_auth()
 
-# Authenticate user (optional, see `auth.py`)
-# if not check_password():
-#     st.warning("🔒 Please log in using the sidebar.")
-#     st.stop()
+# Define navigation using st.Page
+home = st.Page("views/home.py", title="Home", icon="🏠", default=True)
+state_scenarios = st.Page("views/state_scenarios.py", title="State Scenarios", icon="🔁")
+authenticated = st.Page("views/authenticated.py", title="Authenticated", icon="🔒")
 
-st.success("👈 See various example apps in the sidebar")
+# Set up the navigation
+pg = st.navigation([home, state_scenarios, authenticated])
 
-st.title("🛬 App Landing Page")
+# render user info AFTER navigation setup
+render_user_info()
 
-st.info("""
-Streamlit reruns your script from top to bottom every time you interact with your app.
-
-Assigning the current state of the widgets (checkbox, text fields, etc.) to a variable in the process.
-
-Remember that each reruns takes place in a blank slate: no variables are passed between runs.
-
-`st.session_state` is a special variable that persists across reruns of your script.
-
-It is a dictionary that is initialized once when your script is first run, and can be accessed, updated,
-and cleared across reruns.
-""", icon="ℹ️")
-
-
-st.write("Example of using session state to persist variables across reruns:")
-
-if 'count' not in st.session_state:
-    st.session_state.count = 0
-
-plus_one_btn_clicked = st.button('Add +1')
-
-if plus_one_btn_clicked:
-    st.session_state.count += 1
-
-st.write('Count = ', st.session_state.count)
+# Run the selected page
+pg.run()

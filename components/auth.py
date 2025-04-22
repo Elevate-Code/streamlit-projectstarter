@@ -1,3 +1,6 @@
+# ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️ THIS IS OBSOLETE, NEEDS TO BE UPDATED ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+# ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️ THIS IS OBSOLETE, NEEDS TO BE UPDATED ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+
 import streamlit as st
 from functools import wraps
 from typing import Optional, List, Callable
@@ -9,7 +12,7 @@ Currently, in is_allowed_user(), we have this logic flow:
 2. If not in whitelist, check if their domain is allowed (allowed_domains)
 3. Access is granted if either condition is true
 
-In the future, we could extend this to check a database instead of environment variables.
+In the future, we could extend this to check a database instead of secrets.toml
 
 To use role-based access in the future, we could do something like:
 ```
@@ -70,7 +73,7 @@ def check_auth(required_roles: Optional[List[str]] = None) -> None:
 def render_user_info() -> None:
     """Render current user info and logout button in sidebar."""
     with st.sidebar:
-        st.write(f"Logged in as: {st.experimental_user.email}")
+        st.write(f"Logged in as: {st.experimental_user.get('email')}")
         st.button("🚪 Logout", on_click=st.logout, use_container_width=True)
 
 def require_auth(func: Optional[Callable] = None, *, roles: Optional[List[str]] = None) -> Callable:

@@ -1,13 +1,6 @@
 import streamlit as st
 import time
 
-st.set_page_config(
-    page_title="Streamlit Session State Examples",
-    page_icon="🗃️",
-    layout="wide"
-)
-
-
 def stream_data():
     LOREM_IPSUM = """
     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
