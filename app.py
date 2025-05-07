@@ -12,20 +12,17 @@ load_dotenv()
 # SOME_FILE_PATH = "hello.txt"
 
 st.set_page_config(
-    page_title="Streamlit Landing Page App",
-    page_icon="🛬",
-    layout="wide" # "centered" constrains page content to a fixed width; "wide" uses the entire screen
+    page_icon="🛬", # use same icon for all pages
+    layout="wide"
 )
 
 # Check authentication first (optional, see `auth.py`) - will stop execution if not authenticated
 # check_auth()
 
-# Define navigation using st.Page
+# Setup navigation using st.Page
 home = st.Page("views/home.py", title="Home", icon="🏠", default=True)
 state_scenarios = st.Page("views/state_scenarios.py", title="State Scenarios", icon="🔁")
 authenticated = st.Page("views/authenticated.py", title="Authenticated", icon="🔒")
-
-# Set up the navigation
 pg = st.navigation([home, state_scenarios, authenticated])
 
 # render user info AFTER navigation setup

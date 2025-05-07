@@ -1,50 +1,25 @@
-# ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️ THIS IS OBSOLETE, NEEDS TO BE UPDATED ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
-# ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️ THIS IS OBSOLETE, NEEDS TO BE UPDATED ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+"""
+Authentication utilities for Streamlit using Auth0 as the identity provider.
+Auth0 handles domain and user access control natively through Rules and User Management.
+"""
 
 import streamlit as st
 from functools import wraps
 from typing import Optional, List, Callable
 import os
 
-"""
-Currently, in is_allowed_user(), we have this logic flow:
-1. First check if the user is in the whitelist (allowed_users)
-2. If not in whitelist, check if their domain is allowed (allowed_domains)
-3. Access is granted if either condition is true
+# NOTE: The main app or page script (e.g., pages/authenticated.py) should handle load_dotenv().
 
-In the future, we could extend this to check a database instead of secrets.toml
-
-To use role-based access in the future, we could do something like:
-```
-@require_auth(roles=["admin"])
-def admin_only_page():
-    st.write("Admin only content")
-
-# Or directly in a page
-check_auth(required_roles=["admin", "manager"])
-```
-"""
-
-def get_env_list(env_var: str) -> list:
-    """Convert comma-separated environment variable to list, returning empty list if not set."""
-    return os.getenv(env_var, "").split(",") if os.getenv(env_var) else []
-
-def is_allowed_user(email: str) -> bool:
-    """Check if user is allowed based on email domain or specific whitelist."""
-    if not email:
-        return False
-
-    # Get allowed domains and users from environment variables
-    allowed_domains = get_env_list("STREAMLIT_AUTH_ALLOWED_DOMAINS")
-    allowed_users = get_env_list("STREAMLIT_AUTH_ALLOWED_EMAILS")
-
-    # Check whitelist first
-    if email.lower() in (user.lower() for user in allowed_users):
-        return True
-
-    # Then check domain
-    domain = email.split('@')[-1].lower()
-    return domain in (d.lower() for d in allowed_domains)
+def _get_auth_provider_or_raise() -> str:
+    provider = os.getenv("STREAMLIT_AUTH_PROVIDER")
+    if not provider:
+        raise ValueError(
+            "STREAMLIT_AUTH_PROVIDER environment variable is not set. "
+            "This variable is required to specify the authentication provider (e.g., 'auth0'). "
+            "Please ensure it is set in your environment (e.g., in a .env file or your shell) "
+            "and matches the provider configuration in .streamlit/secrets.toml."
+        )
+    return provider
 
 def check_auth(required_roles: Optional[List[str]] = None) -> None:
     """Check authentication and optionally roles, stopping execution if unauthorized.
@@ -53,31 +28,54 @@ def check_auth(required_roles: Optional[List[str]] = None) -> None:
         required_roles: Optional list of roles required to access the page/component
     """
     if not st.experimental_user.is_logged_in:
+        auth_provider_name = _get_auth_provider_or_raise()
         with st.sidebar:
-            st.button("🔐 Login with Google", on_click=st.login, use_container_width=True)
+            provider_display_name = auth_provider_name.capitalize()
+            st.button(
+                f"🔐 Login with {provider_display_name}",
+                on_click=st.login,
+                kwargs={"provider": auth_provider_name},
+                use_container_width=True
+            )
             st.warning("Please log in to continue")
         st.stop()
 
-    # Check if user is allowed
-    if not is_allowed_user(st.experimental_user.email):
-        st.error("🚫 You are not authorized to access this application - please contact the admin")
-        with st.sidebar:
-            st.button("🚪 Logout", on_click=st.logout, use_container_width=True)
+    with st.sidebar:
+        st.write(f"Logged in as: {st.experimental_user.email}")
+        st.button(
+            "🚪 Logout",
+            on_click=st.logout,
+            use_container_width=True
+        )
+
+    # Check if user email is verified
+    # TODO: Couldn't figure out how to use native Auth0 `if (!event.user.email_verified) {api.access.deny('...')}` as
+    # of 2025-05-07 because Streamlit does not propagate errors that appear during the OAuth flow and user just gets
+    # redirected back to home page without any indication of what went wrong.
+    # See: https://github.com/streamlit/streamlit/issues/10160
+    if not st.experimental_user.email_verified:
+        st.toast(f"Verify your email ({st.experimental_user.email})", icon="📧")
+        st.warning(f"Please verify your email (`{st.experimental_user.email}`) before logging in\n\nAdmin can resend verification email or manually verify user via Auth0 Dashboard > User Management > Users")
+        # st.json(st.experimental_user)
         st.stop()
 
-    # Future role checking logic here
-    # if required_roles and not has_required_roles(required_roles):
-    #     st.error("You don't have permission to access this page")
-    #     st.stop()
-
-def render_user_info() -> None:
-    """Render current user info and logout button in sidebar."""
-    with st.sidebar:
-        st.write(f"Logged in as: {st.experimental_user.get('email')}")
-        st.button("🚪 Logout", on_click=st.logout, use_container_width=True)
+    # Auth0 handles access control through Rules, so we don't need additional checks here
+    # Future role-based access control can be implemented by checking Auth0 user metadata similar to how we are doing
+    # it for `st.experimental_user.email_verified`
 
 def require_auth(func: Optional[Callable] = None, *, roles: Optional[List[str]] = None) -> Callable:
     """Decorator to require authentication and optionally specific roles.
+    #TODO: this is largely an example, not actually implemented yet
+
+    To use role-based access in the future, we could do something like:
+    ```
+    @require_auth(roles=["admin"])
+    def admin_only_page():
+        st.write("Admin only content")
+
+    # Or directly in a page
+    check_auth(required_roles=["admin", "manager"])
+    ```
 
     Args:
         func: The function to wrap

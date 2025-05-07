@@ -17,7 +17,6 @@ It is a dictionary that is initialized once when your script is first run, and c
 and cleared across reruns.
 """, icon="ℹ️")
 
-
 st.write("Example of using session state to persist variables across reruns:")
 
 if 'count' not in st.session_state:

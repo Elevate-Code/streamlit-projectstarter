@@ -6,14 +6,16 @@ from dotenv import load_dotenv
 from components.auth import check_auth
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 # Constants
 # SOME_FILE_PATH = "hello.txt"
 
-# Check authentication first (optional, see `auth.py`) - will stop execution if not authenticated
+# Check authentication first - will stop execution if not authenticated
 check_auth()
 
 st.title("🔒 Authenticated")
 
-st.write("You are authenticated and can see this page")
+st.write("You are authenticated if you can see this page")
+
+st.experimental_user # for testing and debugging purposes
