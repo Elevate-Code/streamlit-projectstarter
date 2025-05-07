@@ -132,12 +132,12 @@ exports.onExecutePreUserRegistration = async (event, api) => {
 };
 ```
 
-For the Post-Login Action, the code is nearly identical - you get event.user.email after login and perform the same checks. This will abort the login for any user whose email isn't in the allowlist, returning an access_denied error.
+For the Post-Login Action, you also get `event.user.email` after login and perform the same checks. This will abort the login for any user whose email isn't in the allowlist, returning an `access_denied` error. Additionally, you can add custom claims to the token (for example, roles) here if needed.
 
 ```js
 // Name: "Post-Login Email Whitelist"
 exports.onExecutePostLogin = async (event, api) => {
-  // Define allow lists
+  // Define allow lists for email/domain whitelisting
   const allowedEmails  = [
    // allow specific emails
    'joe@client.com',
@@ -151,6 +151,12 @@ exports.onExecutePostLogin = async (event, api) => {
   const domainAllowed = allowedDomains.map(d => d.toLowerCase()).includes(domain);
   const emailAllowed  = allowedEmails.map(e => e.toLowerCase()).includes(email.toLowerCase());
 
+  // Set claim namespace; add custom app_metadata (such as `roles`) to ID token as custom claim.
+  // Don't store sensitive data in app_metadata and keep it lean
+  const namespace = "https://YOUR-RAILWAY-APP-URL.railway.app/claims";
+  const roles = event.user.app_metadata?.roles || []; // get app_metadata roles (if any)
+  api.idToken.setCustomClaim(`${namespace}/roles`, roles);
+
 // TODO: Couldn't figure out how to use this as of 2025-05-07 because Streamlit does not propagate errors
 // that appear during the OAuth flow and user just gets redirected back to home page without any indication
 // of what went wrong. Just handling unverified users inside the app via `st.experimental_user.email_verified` for now.
@@ -158,6 +164,8 @@ exports.onExecutePostLogin = async (event, api) => {
 //   if (!event.user.email_verified) {
 //     api.access.deny('Please verify your email before logging in.');
 //   }
+
+  // Deny access if email is not in allow lists
   if (!domainAllowed && !emailAllowed) {
     api.access.deny("unauthorized", "Access denied: email is not allowed");
   }
@@ -181,9 +189,9 @@ Inform the client how to self-manage their allowlist by sending them the followi
 ```md
 How to add (or remove) a user to the allowlist on Auth0:
 1. Log in to the [Auth0 Dashboard](https://manage.auth0.com/dashboard) and navigate to the Actions > Library page.
-2. Edit and deploy (save) **both** custom Actions (Pre-Registration Email Whitelist and Post-Login Email Whitelist) found in Actions > Library.
+2. Edit and deploy (save) BOTH custom Actions: **Pre-Registration Email Whitelist** and **Post-Login Email Whitelist**.
 
-After users are whitelisted, they can sign in using one of two methods:
+After users are whitelisted, they can be registered using one of two methods:
 1. Self-Signup: Users navigate to the app, click "Login," and then click "Sign up" to register on the login page with their whitelisted email address. By default, Auth0 automatically sends a verification email with a confirmation link.
 2. Admin-Added: You can also manually add users (for Username-Password-Authentication) to the Auth0 database by navigating to the Users section in the Auth0 Dashboard and clicking the "Add User" button. Users can also be imported in bulk from a CSV file.
 
@@ -191,6 +199,15 @@ Note that in User Management, you can also:
 - Send a verification email to a user and/or manually verify their email address
 - Change a user's email or password
 - See user details, metadata, and detailed audit logs
+
+**Defining roles:**
+New users default to the lowest `public` role, which has no permissions. You can change this by editing the user's roles in Users > [user] > Details (not to be confused with the Roles tab).
+1. Open a user's profile in the Auth0 Dashboard.
+2. In the Details tab, scroll down to the "**App** Metadata" section - 🚫 NOT the "User Metadata" section, which is user-editable.
+3. In the "App Metadata" section, define the user's roles like so: `{"roles": ["admin", "editor"]}`
+   - The `roles` values will vary based on your application's needs, for example: `admin`, `editor`, `viewer`, `office`, `accounting`, etc.
+   - You can assign multiple roles to a single user, they will be granted all of the access associated with each role.
+4. Click "Save" to apply the changes.
 ```
 
 #### Invite-Only Option
@@ -198,6 +215,64 @@ Note that in User Management, you can also:
 TODO: Need to further test and document this option, but it's likely just a matter of toggling off the "Allow users to sign up" option in the Auth0 Application settings and just going with the Admin-added approach in the client instructions above.
 
 Auth0 offers an [Invite Only](https://auth0.com/docs/email/send-email-invitations-for-application-signup) feature where public sign-ups are disabled. Instead, administrators manually invite users by email via the dashboard. Invited users receive a sign-up link, inherently whitelisting who can join.
+
+#### Role-Based Access Control
+
+Auth0'''s free plan does not officially include the Role Management feature via the dashboard or API (RBAC is a paid feature). However, you can still implement role-based access control by leveraging user profile metadata or custom claims:
+
+Using Metadata for Roles: The reliable approach on free tier is to store roles in the user's metadata. Auth0 provides two metadata fields on each user profile: user_metadata and app_metadata. For roles or permissions, use app_metadata, since it cannot be edited by the end user and is intended for access information. For example, you can edit a user's profile in the Auth0 Dashboard to add an app_metadata key like:
+
+```json
+"app_metadata": { "roles": ["admin", "editor"] }
+```
+
+This effectively “assigns” roles to the user. You can manage these metadata-based roles through the Auth0 dashboard (User Management > Users > select user > App Metadata section) or via the Auth0 Management API. Using metadata is a free-tier-friendly way to define roles in a maintainable fashion (you or the client can update roles without changing application code).
+
+To enforce RBAC in the Streamlit app, the app needs to know the user's roles after login. The best practice is to embed the role information into the user's ID token (or access token) as custom claims during the authentication flow. Auth0 Actions (which are available on the free tier, with up to 3 actions) are the recommended way to achieve this. You can update the Post-Login Action to add the roles to the token:
+
+```js
+exports.onExecutePostLogin = async (event, api) => {
+  // Set claim namespace; add custom app_metadata (such as `roles`) to ID token as custom claim.
+  // Don't store sensitive data in app_metadata and keep it lean
+  const namespace = "https://YOUR-RAILWAY-APP-URL.railway.app/claims";
+  const roles = event.user.app_metadata?.roles || []; // get app_metadata roles (if any)
+  api.idToken.setCustomClaim(`${namespace}/roles`, roles);
+};
+```
+
+This Action will take whatever roles you stored in the user's app_metadata and inject them into the ID token as, for example, `"https://yourapp.com/claims/roles": ["admin"]`.
+
+**Accessing Role Data in the Streamlit App**
+
+Upon a successful login `st.user` will contain the user's OIDC ID token identity information. This means your custom roles claim should be present in `st.user`. For example:
+
+```python
+if st.user.is_logged_in:
+   # Use a dict because the key contains characters that can't be used as a simple attribute
+    roles = st.user.to_dict().get("https://YOUR-RAILWAY-APP-URL.railway.app/claims/roles", [])
+    st.write("Roles:", roles)
+```
+
+You can then use roles to control access to different parts of your app. For example:
+
+```python
+# Show/Hide UI Components
+if "admin" in roles:
+    st.sidebar.write("🔒 **Admin Panel**")
+    # ... admin-specific widgets ...
+else:
+    st.write("Welcome, regular user.")
+    # ... non-admin content ...
+
+
+# Or Restricting the Entire Page
+import streamlit as st
+roles = st.session_state.get("roles", [])  # assume you saved roles in session_state
+if "admin" not in roles:
+    st.error("You are not authorized to view this page.")
+    st.stop()
+# ... rest of admin page code for authorized users ...
+```
 
 ### Auth0 Environment Variables & Generating the Secrets File
 
