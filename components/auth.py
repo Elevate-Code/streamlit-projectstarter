@@ -55,7 +55,7 @@ def check_auth(required_roles: Optional[List[str]] = None) -> None:
     # See: https://github.com/streamlit/streamlit/issues/10160
     if not st.experimental_user.email_verified:
         st.toast(f"Verify your email ({st.experimental_user.email})", icon="📧")
-        st.warning(f"Please verify your email (`{st.experimental_user.email}`) before logging in\n\nAdmin can resend verification email or manually verify user via Auth0 Dashboard > User Management > Users")
+        st.warning(f"Please verify your email (`{st.experimental_user.email}`) then log out and log back in.\n\nIf you have already verified your email, you may need to log out and log back in.\n\nAdmin can resend verification email or manually verify user via Auth0 Dashboard > User Management > Users")
         # st.json(st.experimental_user)
         st.stop()
 

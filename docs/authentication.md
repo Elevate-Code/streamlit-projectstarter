@@ -82,17 +82,17 @@ Once invited to the Team, you will need to grant yourself Admin permissions for 
 2. Under **Settings** set the following:
    - Name: Project name in title case (eg. "[Client Name] Reporting Dashboard").
    - Description: A brief sentence to help users identify the application during login.
+   - Copy the Client ID and Client Secret, and set `STREAMLIT_AUTH_PROVIDER=auth0` in your `.env` file
    - Allowed Callback URLs: `http://localhost:8501/oauth2callback, https://YOUR-RAILWAY-APP-URL.railway.app/oauth2callback`
    - Allowed Logout URLs: `http://localhost:8501, https://YOUR-RAILWAY-APP-URL.railway.app`
    - Allowed Web Origins: `http://localhost:8501, https://YOUR-RAILWAY-APP-URL.railway.app`
-3. Scroll up to Basic Information, copy the Client ID and Client Secret, and set `STREAMLIT_AUTH_PROVIDER=auth0` in your `.env` file.
-4. Scroll to the bottom of Settings, and under Advanced Settings > Grant Types, ensure "Authorization Code" is selected.
-5. While in Advanced Settings, go to the Endpoints tab and copy the "OpenID Configuration" URL (eg. `https://YOUR-AUTH0-DOMAIN.us.auth0.com/.well-known/openid-configuration`). You will need this for the **STREAMLIT_AUTH_SERVER_METADATA_URL** environment variable.
-6. Click **Save Changes**
-7. Under Credentials > Application Authentication, select "Client Secret (Basic)" as the authentication method and click Save.
-8. ⚠️ Proceed to the [Users/Domains Whitelisting with Auth0 Actions](#usersdomains-whitelisting-with-auth0-actions) section for details on how to whitelist specific users or organizations.
+3. Scroll to the bottom of Settings, and under Advanced Settings > Grant Types, ensure "Authorization Code" is selected.
+4. While in Advanced Settings, go to the Endpoints tab and copy the "OpenID Configuration" URL (eg. `https://YOUR-AUTH0-DOMAIN.us.auth0.com/.well-known/openid-configuration`). You will need this for the **STREAMLIT_AUTH_SERVER_METADATA_URL** environment variable.
+5. Click **Save Changes**
+6. Back at the top of the page, under Credentials > Application Authentication, select "Client Secret (Basic)" as the authentication method and click Save.
+7. ⚠️ Proceed to the [Users/Domains Whitelisting with Auth0 Actions](#usersdomains-whitelisting-with-auth0-actions) section for details on how to whitelist specific users or organizations.
 
-TODO: Add instructions here on how to (optionally)disable strict Auth0 password requirements (eg. 8 characters, uppercase, lowercase, number, special character) on Auth0, ... via Auth0 Tenant Dashboard, select Settings, then Advanced?
+TODO: Add instructions here on how to (optionally) disable strict Auth0 password requirements (eg. 8 characters, uppercase, lowercase, number, special character) on Auth0, ... via Auth0 Tenant Dashboard, select Settings, then Advanced?
 
 ### Users/Domains Whitelisting with Auth0 Actions
 
@@ -100,11 +100,9 @@ TODO: Add instructions here on how to (optionally)disable strict Auth0 password 
 
 **🔒 SECURITY NOTES:** We will use a `pre-user-registration` Action to check username-password signups and block unauthorized signups as early as possible and implement `post-login` enforcement for login-time checks. This latter step is crucial if administrators manually add users or if social logins (which bypass the registration check) might be used later. Finally, since a user can sign up with an allowed domain using a username-password without verifying domain ownership, it's critical to require email verification either before a token is issued or during the in-app authentication check.
 
-Go to Actions > Library > Create Action > From scratch. NOTE: (It might be more direct to do this from the Triggers page if you're adding to an existing flow).
+Go to Actions > Triggers > `pre-user-registration` > Add Action (+) > From scratch.
 
-Add this action to your Auth0 tenant, customize it, and click Deploy.
-
-**💡 TIP:** You can use the play button ("▶️") in the editor to test if the Action works correctly with various emails before deploying it.
+**💡 FYI:** You can use the play button ("▶️") in the editor to test if the Action works correctly with various emails before deploying it.
 
 ```js
 // Name: "Pre-Registration Email Whitelist"
@@ -132,7 +130,18 @@ exports.onExecutePreUserRegistration = async (event, api) => {
 };
 ```
 
-For the Post-Login Action, you also get `event.user.email` after login and perform the same checks. This will abort the login for any user whose email isn't in the allowlist, returning an `access_denied` error. Additionally, you can add custom claims to the token (for example, roles) here if needed.
+Back on the Triggers page, on the flow customization page, you should see a section (often on the right side) listing your "Custom" Actions. Find the Action you created, drag it into the visual flow editor in the main part of the page, and click "Apply" to save the changes to the flow.
+
+Go back to the Triggers page and repeat for the `post-login` flow. The Post-Login Action, is very similar to the Pre-Registration Action, but adds custom claims to the token (for example, roles).
+
+The process is *nearly* the same:
+1. Actions > Triggers > `post-login` > Add Action (+) > From scratch.
+2. Name the Action (eg. "Post-Login Email Whitelist")
+3. Copy and paste code below and modify the allowlist to exactly match the Pre-Registration Email Whitelist.
+4. 👉 BUT, also modify the `namespace` variable to match your Railway app URL (eg. `https://YOUR-RAILWAY-APP-URL.railway.app/claims`).
+5. Deploy > Drag the Action into the visual flow editor > Apply
+
+**💡 FYI:** To enforce RBAC in the Streamlit app, the app needs to know the user's roles after login. The best practice is to embed the role information into the user's ID token (or access token) as custom claims during the authentication flow. The `api.idToken.setCustomClaim(``${namespace}/roles``, roles);`  bit of code will take whatever roles you stored in the user's app_metadata and inject them into the ID token as, for example, `"https://yourapp.com/claims/roles": ["admin"]`.
 
 ```js
 // Name: "Post-Login Email Whitelist"
@@ -170,41 +179,44 @@ exports.onExecutePostLogin = async (event, api) => {
     api.access.deny("unauthorized", "Access denied: email is not allowed");
   }
 };
-
 ```
 
-After you create and deploy an Action, you need to attach it to the correct "trigger" (pre-registration or post-login).
+####  Test the Configuration Locally Then Minimaliy in Production
 
-Here's how you do it:
+If when registering as a new user you get a "Something went wrong, please try again later" error, make sure you have the .env file set up correctly and nothing is missing.
 
-1.  Go to Actions > Triggers.
-2.  For your "Pre-Registration Email Whitelist" Action, select the **pre-user-registration** flow. This flow might also be labeled as "Sign Up" or "Registration".
-3.  On the flow customization page, you should see a section (often on the right side) listing your "Custom" Actions. Find the Action you created, drag it into the visual flow editor in the main part of the page, and click "Apply" to save the changes to the flow.
-4.  Repeat for the "Post-Login Email Whitelist" Action, this time selecting the **post-login** flow.
+Don't forget to restart the terminal session and/or Streamlit server after making changes to the .env file.
+
+Check the Auth0 Dashboard > Logs > All Logs to ensure the user was created and the email whitelist actions were triggered.
+
+If needed, delete the user and try Signing up again.
+
+See the [Railway Deployment](#railway-deployment) section for details on how to deploy the changes to production and do a small scale test there.
 
 #### Client Instructions
 
 Inform the client how to self-manage their allowlist by sending them the following instructions:
 
 ```md
-How to add (or remove) a user to the allowlist on Auth0:
+**Add (or remove) users/domains via the allowlist on Auth0:**
 1. Log in to the [Auth0 Dashboard](https://manage.auth0.com/dashboard) and navigate to the Actions > Library page.
 2. Edit and deploy (save) BOTH custom Actions: **Pre-Registration Email Whitelist** and **Post-Login Email Whitelist**.
 
-After users are whitelisted, they can be registered using one of two methods:
+**User registration options:**
 1. Self-Signup: Users navigate to the app, click "Login," and then click "Sign up" to register on the login page with their whitelisted email address. By default, Auth0 automatically sends a verification email with a confirmation link.
-2. Admin-Added: You can also manually add users (for Username-Password-Authentication) to the Auth0 database by navigating to the Users section in the Auth0 Dashboard and clicking the "Add User" button. Users can also be imported in bulk from a CSV file.
+2. Social Login: Users can also sign up using a social provider (eg. Google, etc.) if their account email is whitelisted.
+3. Admin-Added: You can also manually add users (for Username-Password-Authentication) to the Auth0 database by navigating to the Users section in the Auth0 Dashboard and clicking the "Add User" button. You can also verify their email address for them via Details > Email > Edit section.
 
 Note that in User Management, you can also:
 - Send a verification email to a user and/or manually verify their email address
 - Change a user's email or password
 - See user details, metadata, and detailed audit logs
 
-**Defining roles:**
+**Setting user roles:**
 New users default to the lowest `public` role, which has no permissions. You can change this by editing the user's roles in Users > [user] > Details (not to be confused with the Roles tab).
 1. Open a user's profile in the Auth0 Dashboard.
 2. In the Details tab, scroll down to the "**App** Metadata" section - 🚫 NOT the "User Metadata" section, which is user-editable.
-3. In the "App Metadata" section, define the user's roles like so: `{"roles": ["admin", "editor"]}`
+3. In the "App Metadata" section, define the user's roles like so: `{"roles": ["admin"]}` or `{"roles": ["admin", "editor"]}`
    - The `roles` values will vary based on your application's needs, for example: `admin`, `editor`, `viewer`, `office`, `accounting`, etc.
    - You can assign multiple roles to a single user, they will be granted all of the access associated with each role.
 4. Click "Save" to apply the changes.
@@ -218,7 +230,7 @@ Auth0 offers an [Invite Only](https://auth0.com/docs/email/send-email-invitation
 
 #### Role-Based Access Control
 
-Auth0'''s free plan does not officially include the Role Management feature via the dashboard or API (RBAC is a paid feature). However, you can still implement role-based access control by leveraging user profile metadata or custom claims:
+Auth0's free plan does not officially include the Role Management feature via the dashboard or API (RBAC is a paid feature). However, you can still implement role-based access control by leveraging user profile metadata or custom claims:
 
 Using Metadata for Roles: The reliable approach on free tier is to store roles in the user's metadata. Auth0 provides two metadata fields on each user profile: user_metadata and app_metadata. For roles or permissions, use app_metadata, since it cannot be edited by the end user and is intended for access information. For example, you can edit a user's profile in the Auth0 Dashboard to add an app_metadata key like:
 
@@ -227,20 +239,6 @@ Using Metadata for Roles: The reliable approach on free tier is to store roles i
 ```
 
 This effectively “assigns” roles to the user. You can manage these metadata-based roles through the Auth0 dashboard (User Management > Users > select user > App Metadata section) or via the Auth0 Management API. Using metadata is a free-tier-friendly way to define roles in a maintainable fashion (you or the client can update roles without changing application code).
-
-To enforce RBAC in the Streamlit app, the app needs to know the user's roles after login. The best practice is to embed the role information into the user's ID token (or access token) as custom claims during the authentication flow. Auth0 Actions (which are available on the free tier, with up to 3 actions) are the recommended way to achieve this. You can update the Post-Login Action to add the roles to the token:
-
-```js
-exports.onExecutePostLogin = async (event, api) => {
-  // Set claim namespace; add custom app_metadata (such as `roles`) to ID token as custom claim.
-  // Don't store sensitive data in app_metadata and keep it lean
-  const namespace = "https://YOUR-RAILWAY-APP-URL.railway.app/claims";
-  const roles = event.user.app_metadata?.roles || []; // get app_metadata roles (if any)
-  api.idToken.setCustomClaim(`${namespace}/roles`, roles);
-};
-```
-
-This Action will take whatever roles you stored in the user's app_metadata and inject them into the ID token as, for example, `"https://yourapp.com/claims/roles": ["admin"]`.
 
 **Accessing Role Data in the Streamlit App**
 
