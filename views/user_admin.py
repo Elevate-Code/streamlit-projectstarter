@@ -20,23 +20,23 @@ load_dotenv(override=True)
 AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
 AUTH0_M2M_CLIENT_ID = os.getenv("AUTH0_M2M_CLIENT_ID")
 AUTH0_M2M_CLIENT_SECRET = os.getenv("AUTH0_M2M_CLIENT_SECRET")
-AUTH0_DATABASE_CONNECTION_NAME = os.getenv("AUTH0_DATABASE_CONNECTION_NAME", "Username-Password-Authentication")
+AUTH0_DATABASE_CONNECTION_NAME = os.getenv("AUTH0_DATABASE_CONNECTION_NAME")
 AUTH0_TEAM_LOGIN_URL = os.getenv("AUTH0_TEAM_LOGIN_URL") # NEW – optional team dashboard URL
 
 # Check authentication first
 require_page_access("views/user_admin.py")
 
 # Ensure essential environment variables are set
-if not all([AUTH0_DOMAIN, AUTH0_M2M_CLIENT_ID, AUTH0_M2M_CLIENT_SECRET]):
+if not all([AUTH0_DOMAIN, AUTH0_M2M_CLIENT_ID, AUTH0_M2M_CLIENT_SECRET, AUTH0_DATABASE_CONNECTION_NAME]):
     st.error(
-        "Missing one or more Auth0 M2M environment variables: "
-        "AUTH0_DOMAIN, AUTH0_M2M_CLIENT_ID, AUTH0_M2M_CLIENT_SECRET. "
+        "Missing one or more Auth0 environment variables: "
+        "AUTH0_DOMAIN, AUTH0_M2M_CLIENT_ID, AUTH0_M2M_CLIENT_SECRET, AUTH0_DATABASE_CONNECTION_NAME. "
         "Please set them in your environment and ensure this page is protected."
     )
     st.stop()
 
 st.title("Auth0 User Management")
-st.caption("View users and manage invitations via the Auth0 Management API.")
+st.caption(f"View users and manage invitations for the **{AUTH0_DATABASE_CONNECTION_NAME}** database connection.")
 
 # --- Helper Functions ---
 
@@ -84,11 +84,14 @@ def list_auth0_users(access_token):
                 f'https://{AUTH0_DOMAIN}/api/v2/users',
                 headers={"Authorization": f"Bearer {access_token}"},
                 params={
-                    "per_page": 50,
+                    "per_page": 100,
                     "page": 0,
                     "include_totals": "true",
-                    "fields": "email,user_id,name,last_login,logins_count,email_verified,app_metadata",
-                    "include_fields": "true"
+                    "fields": "email,user_id,name,last_login,logins_count,email_verified,app_metadata,identities",
+                    "include_fields": "true",
+                    # --- new filters ---
+                    "search_engine": "v3",
+                    "q": f'identities.connection:"{AUTH0_DATABASE_CONNECTION_NAME}"'
                 }
             )
             response.raise_for_status()
@@ -267,7 +270,7 @@ if m2m_token := fetch_m2m_token():
 
     # Create new user
     st.subheader("Invite New User")
-    st.markdown("Create a user in Auth0 and trigger Auth0 to send a password setup email.")
+    st.markdown(f"Create a user in the **{AUTH0_DATABASE_CONNECTION_NAME}** connection and trigger Auth0 to send a password setup email.")
 
 
     with st.form("invite_user", clear_on_submit=True):

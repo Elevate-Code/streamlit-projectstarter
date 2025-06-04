@@ -1,12 +1,11 @@
 # THIS IS INTENDED TO BE A HIGH LEVEL EXAMPLE
 from sqlalchemy import text
 from datetime import datetime
-import shutil, os
+import os
 from pathlib import Path
 from .models import engine, Base  # Import from models.py
 
-# DB setup - supports SQLite or PostgreSQL (Railway)
-DB_URL = os.getenv('DATABASE_URL', 'sqlite:///app.db')
+DB_URL = os.getenv('DATABASE_URL')
 
 # ==============================================================================
 # Database Utility Functions
@@ -50,6 +49,8 @@ def migration_drop_legacy():
 
 # CLI interface
 if __name__ == "__main__":
+    if not DB_URL:
+        raise ValueError("DATABASE_URL environment variable is required")
     print("Available migrations:\n1. Add new_field column\n2. Drop legacy tables")
     choice = input("Select migration (1-2): ")
     if choice == "1":

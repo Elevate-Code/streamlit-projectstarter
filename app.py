@@ -26,6 +26,18 @@ render_auth_sidebar()
 # Create navigation with only pages the current user can access.
 pages = create_navigation_pages(ALL_PAGES)
 
+# Check for and display RBAC warning if applicable
+if st.session_state.get('rbac_using_defaults_due_to_no_persistent_db', False):
+    st.warning(
+        "**⚠️ RBAC Using Default/Temporary Settings:**\n\n"
+        "The `DATABASE_URL` environment variable is not set. "
+        "The application is using temporary, non-persistent settings for page access control, "
+        "loaded from `get_default_page_access_config()` in `pages.py`.\n\n"
+        "Any changes to access rules (e.g., via an admin panel) **will not be saved.**\n\n"
+        "To enable persistent storage for Role-Based Access Control, configure `DATABASE_URL` (e.g., for PostgreSQL).",
+        icon="💾"
+    )
+
 if pages:
     pg = st.navigation(pages)
     pg.run()

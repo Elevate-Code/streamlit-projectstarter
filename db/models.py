@@ -6,18 +6,18 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import os
 
-# DB setup - supports SQLite or PostgreSQL (Railway)
-DB_URL = os.getenv('DATABASE_URL', 'sqlite:///app.db')
+DB_URL = os.getenv('DATABASE_URL')
 
-# For SQLite, use JSON instead of JSONB
-if DB_URL.startswith('sqlite'):
-    from sqlalchemy import JSON as JSONB
+# Only create engine and Session if database URL is provided
+# This is purely to allow for local dev until we have a database in place
+if DB_URL:
+    engine = create_engine(DB_URL)
+    Session = sessionmaker(bind=engine)
+else:
+    # engine = None
+    Session = None
 
-engine = create_engine(DB_URL)
 Base = declarative_base()
-
-# Create Session factory
-Session = sessionmaker(bind=engine)
 
 #NOTE: The User and AppSettings tables are primarily here for Auth/RBAC. If you don't need them, you can remove them.
 
@@ -62,8 +62,6 @@ class AppSettings(Base):
     )
 
 # NOTE: Database tables are not automatically created.
-# To create tables, either:
-# 1. Set up a proper PostgreSQL database on Railway and run migrations
-# 2. For local development with SQLite, manually run:
+# To create tables, set up a proper PostgreSQL database on Railway and run migrations:
 #    python -c "from db.models import Base, engine; Base.metadata.create_all(engine)"
 # Removed automatic creation: Base.metadata.create_all(engine)

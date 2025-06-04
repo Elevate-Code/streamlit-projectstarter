@@ -9,6 +9,7 @@ the Auth Admin interface.
 import streamlit as st
 from typing import List, Dict, Optional
 import json
+from json import JSONDecodeError
 import os
 from db.models import Session as SessionFactory, AppSettings
 from auth.auth import get_current_user  # Updated import
@@ -28,20 +29,36 @@ def get_user_roles() -> List[str]:
 
 # @st.cache_data(ttl=60, show_spinner=False)
 def _fetch_page_access_config() -> Dict:
-    """Internal helper that actually queries the DB (cached)."""
-    # Moved SessionFactory inside to only run on cache miss
-    with SessionFactory() as session:
-        setting = session.query(AppSettings).filter(
-            AppSettings.key == 'page_access'
-        ).first()
+    """Return page-access configuration from DB or sensible defaults.
 
-        if setting:
-            try:
-                return json.loads(setting.value)
-            except json.JSONDecodeError:
-                st.error("Error decoding page access config from DB. Falling back to defaults.")
-                # Fall through to default if JSON is corrupted
+    Fetches the page access configuration from the database. Falls back to
+    defaults if no configuration is found or if there's an error.
+    """
+    # If no database is configured, return defaults
+    if SessionFactory is None:
         return get_default_page_access_config()
+
+    try:
+        with SessionFactory() as session:
+            setting = (
+                session.query(AppSettings)
+                .filter(AppSettings.key == "page_access")
+                .first()
+            )
+
+            if setting is None:                       # No record in DB
+                return get_default_page_access_config()
+
+            config = json.loads(setting.value)        # May raise JSONDecodeError
+            return config
+
+    except JSONDecodeError:
+        st.error("Error decoding page-access config from DB. Falling back to defaults.")
+    except Exception as e:
+        st.error(f"Database error fetching page-access config: {e}. Falling back to defaults.")
+
+    # Any failure path ends up here
+    return get_default_page_access_config()
 
 
 def load_page_access_config() -> Dict:
@@ -58,6 +75,11 @@ def save_page_access_config(config: Dict) -> bool:
     Returns:
         True if saved successfully, False otherwise.
     """
+    # If no database is configured, can't save
+    if SessionFactory is None:
+        st.error("Cannot save page access config: No database configured")
+        return False
+
     try:
         with SessionFactory() as session:
             setting = session.query(AppSettings).filter(

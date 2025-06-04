@@ -56,6 +56,7 @@ AUTH0_TEAM_LOGIN_URL=https://accounts.auth0.com/teams/<team-id-here>
 AUTH0_DOMAIN=
 AUTH0_M2M_CLIENT_ID=
 AUTH0_M2M_CLIENT_SECRET=
+AUTH0_DATABASE_CONNECTION_NAME=
 ```
 
 **TERMINOLOGY:** Think of an Auth0 `Team` as the billing & admin envelope that can hold many `Tenants` - though the Free plan allows just one tenant. Each Tenant is an isolated environment (dev, staging, prod) with its own config, logs, and `Users` (end-users). Inside a Tenant you create `Applications` (front-end or API clients) and configure `Connections` (user:pass database, social login, passwordless) that authenticate users. Collaborators are invited either at the **Team** level (see every tenant) or the **Tenant** level (just that tenant); the Free plan allows **three admins** in total. `Organizations` let you model B2B customers (clients?) and are available - up to **five** on Free.
@@ -93,36 +94,21 @@ Once invited to a Team, you will need to grant yourself Admin permissions for th
 ### Auth0 Application Setup
 
 1. Create a new application, selecting "Regular Web Application" as the application type.
-2. Under **Settings** set the following:
-   - Name: Project name in title case (eg. "[Client Name] Reporting Dashboard").
+2. Name: Project name in title case (eg. "[Client Name] Reporting Dashboard").
+3. Under **Settings** of the new application, do the following:
    - Copy the Domain, to the `AUTH0_DOMAIN` value in your `.env` file
    - Copy the Client ID to the `STREAMLIT_AUTH_CLIENT_ID` value
    - and Client Secret to the `STREAMLIT_AUTH_CLIENT_SECRET` value
    - Set `STREAMLIT_AUTH_PROVIDER=auth0` in your `.env` file (if not already set)
+   - (FYI: you can skip adding the https://YOUR-RAILWAY-APP-URL.railway.app if you have not deployed to Railway yet)
    - Application Login URI: `https://YOUR-RAILWAY-APP-URL.railway.app/`
    - Allowed Callback URLs: `http://localhost:8501/oauth2callback, https://YOUR-RAILWAY-APP-URL.railway.app/oauth2callback`
    - Allowed Logout URLs: `http://localhost:8501, https://YOUR-RAILWAY-APP-URL.railway.app`
    - Allowed Web Origins: `http://localhost:8501, https://YOUR-RAILWAY-APP-URL.railway.app`
-3. Scroll to the bottom of Settings, and under **Advanced Settings** > Grant Types, ensure "Authorization Code" is selected.
-4. While in Advanced Settings, go to the Endpoints tab and copy the "OpenID Configuration" URL (eg. `https://YOUR-AUTH0-DOMAIN.us.auth0.com/.well-known/openid-configuration`). You will need this for the `STREAMLIT_AUTH_SERVER_METADATA_URL` environment variable.
-5. Click **Save Changes**
-6. Back at the top of the page, under Credentials > Application Authentication, select "Client Secret (Basic)" as the authentication method and click Save.
-
-### Disabling Public Sign-ups (Invite-Only Use Case)
-
-⚠️ **IMPORTANT:** Consider disabling "Enable Application Connections" to ensure new applications don't automatically inherit all connections, which may inadvertently allow social registration/login on new apps and bypass the invite-only system. You can find this on-by-default setting in Tenant Settings at **Settings** > Advanced, locate and toggle off "Enable Application Connections".
-
-Since invited users don't need email verification, disable Auth0's automatic emails to avoid confusion. In Branding > Email Templates, set both "Verification Email" and "Welcome Email" status to "Template disabled". When creating users via the Management API, we will also use `verify_email: false` to prevent verification emails.
-
-For private/internal applications, disable public registration to ensure only invited users can access the application:
-
-1. Navigate to **Authentication > Database** in Auth0 Dashboard
-2. Select your connection (e.g., "Username-Password-Authentication")
-3. Go to **Settings** tab
-4. Toggle **"Disable Sign Ups"** to the ON position
+4. Scroll to the bottom of Settings, and under **Advanced Settings** > Grant Types, ensure "Authorization Code" is selected.
 5. Click **Save**
-
-This prevents users from self-registering. All new users must be invited through the Streamlit admin interface.
+6. While still in Advanced Settings, go to the Endpoints tab and copy the "OpenID Configuration" URL (eg. `https://YOUR-AUTH0-DOMAIN.us.auth0.com/.well-known/openid-configuration`). You will need this for the `STREAMLIT_AUTH_SERVER_METADATA_URL` environment variable.
+7. Back at the top of the page, under Credentials > Application Authentication, select **Client Secret (Basic)** as the authentication method and click Save.
 
 ### Machine-to-Machine Application Setup
 
@@ -130,7 +116,7 @@ To enable a Streamlit admin interface for user management, create an M2M applica
 
 1. In Auth0 Dashboard, go to **Applications** > Create Application
 2. Choose Machine to Machine Applications as the type
-3. Name it clearly (e.g., "[App Name] M2M")
+3. Name it to clearly associate it with the application (e.g., "[App Name] M2M")
 4. Select Auth0 Management API from the available APIs
 5. Grant these minimum scopes:
    - `read:users` - List user profiles
@@ -148,7 +134,34 @@ To enable a Streamlit admin interface for user management, create an M2M applica
    AUTH0_M2M_CLIENT_ID=your_m2m_client_id
    AUTH0_M2M_CLIENT_SECRET=your_m2m_client_secret
    ```
-7. Go to **Authentication** > Database > Username-Password-Authentication > Applications and confirm that this M2M application is enabled.
+
+### Database Connection Setup
+
+⚠️ **IMPORTANT:** It is not possible to rename a database connection after creation - so take care to name it appropriately. [The only workaround](https://community.auth0.com/t/can-you-change-a-database-connection-name-after-creation/117185/3) is to create a new database connection with the new name and then Export/Import the users.
+
+1. Navigate to **Authentication > Database** in Auth0 Dashboard.
+2. Click **Create Database Connection**.
+3. Give the connection a permanent name (use format `<app_name>-users`, ex: `sales-dashboard-users`).
+3. Set the `AUTH0_DATABASE_CONNECTION_NAME` environment variable to match this name (e.g., `AUTH0_DATABASE_CONNECTION_NAME=sales-dashboard-users`)
+4. If building an invite-only application, toggle on "Disable Sign Ups".
+5. Click Create.
+6. In the **Applications** tab of the newly created connection, enable for both applications you just created.
+
+### Disabling Public Sign-ups (Invite-Only Use Case)
+
+⚠️ **IMPORTANT:** Consider disabling "Enable Application Connections" to ensure new applications don't automatically inherit all connections, which may inadvertently allow social registration/login on new apps and bypass the invite-only system. You can find this on-by-default setting in Tenant Settings at **Settings** > Advanced, locate and toggle off "Enable Application Connections".
+
+Since invited users don't need email verification, disable Auth0's automatic emails to avoid confusion. In Branding > Email Templates, set both "Verification Email" and "Welcome Email" status to "Template disabled". When creating users via the Management API, we will also use `verify_email: false` to prevent verification emails.
+
+For private/internal applications, ensure that you have disabled public registration on the database connection so that only invited users can access the application:
+
+1. Navigate to **Authentication > Database** in Auth0 Dashboard
+2. Select your database connection
+3. Go to **Settings** tab
+4. Toggle **"Disable Sign Ups"** to the ON position
+5. Click **Save**
+
+This prevents users from self-registering. All new users must be invited through the Streamlit admin interface.
 
 ### Login Verification with Auth0 Actions
 
@@ -265,6 +278,11 @@ All your environment variables should now be set.
 Run the following command to generate the secrets file:
 ```bash
 python scripts/generate_secrets.py
+```
+
+Run the following command to create the your admin user account:
+```bash
+python scripts/auth_admin_setup.py
 ```
 
 ### Railway Deployment

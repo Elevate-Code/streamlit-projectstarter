@@ -16,11 +16,11 @@ load_dotenv(override=True)
 AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
 AUTH0_M2M_CLIENT_ID = os.getenv("AUTH0_M2M_CLIENT_ID")
 AUTH0_M2M_CLIENT_SECRET = os.getenv("AUTH0_M2M_CLIENT_SECRET")
-AUTH0_DATABASE_CONNECTION_NAME = os.getenv("AUTH0_DATABASE_CONNECTION_NAME", "Username-Password-Authentication")
+AUTH0_DATABASE_CONNECTION_NAME = os.getenv("AUTH0_DATABASE_CONNECTION_NAME")
 STREAMLIT_AUTH_CLIENT_ID = os.getenv("STREAMLIT_AUTH_CLIENT_ID")
 
 # Validate environment
-missing = [var for var in ["AUTH0_DOMAIN", "AUTH0_M2M_CLIENT_ID", "AUTH0_M2M_CLIENT_SECRET", "STREAMLIT_AUTH_CLIENT_ID"]
+missing = [var for var in ["AUTH0_DOMAIN", "AUTH0_M2M_CLIENT_ID", "AUTH0_M2M_CLIENT_SECRET", "AUTH0_DATABASE_CONNECTION_NAME", "STREAMLIT_AUTH_CLIENT_ID"]
            if not os.getenv(var)]
 if missing:
     print(f"❌ Missing required environment variables: {', '.join(missing)}")
@@ -43,17 +43,31 @@ def get_m2m_token():
 
 
 def get_existing_admins(token):
-    """Get list of existing admin emails."""
+    """Get list of existing admin emails in the specified database connection."""
+    # Auth0 API doesn't support direct connection filtering, so we need to filter after fetching
     response = requests.get(
         f'https://{AUTH0_DOMAIN}/api/v2/users',
         headers={"Authorization": f"Bearer {token}"},
-        params={"per_page": 100, "fields": "email,app_metadata", "include_fields": "true"}
+        params={"per_page": 100, "fields": "email,app_metadata,identities", "include_fields": "true"}
     )
     response.raise_for_status()
     data = response.json()
     users = data if isinstance(data, list) else data.get('users', [])
 
-    return [u['email'] for u in users if 'admin' in u.get('app_metadata', {}).get('roles', [])]
+    # Filter users by connection and admin role
+    admin_users = []
+    for user in users:
+        # Check if user has admin role
+        if 'admin' not in user.get('app_metadata', {}).get('roles', []):
+            continue
+
+        # Check if user belongs to our database connection
+        for identity in user.get('identities', []):
+            if identity.get('connection') == AUTH0_DATABASE_CONNECTION_NAME:
+                admin_users.append(user['email'])
+                break
+
+    return admin_users
 
 
 def send_password_email(email):
@@ -135,6 +149,7 @@ def create_or_update_admin(token, email):
 def main():
     """Main script execution."""
     print("🚀 Auth0 Admin User Setup\n")
+    print(f"Database Connection: {AUTH0_DATABASE_CONNECTION_NAME}\n")
 
     # Get M2M token
     print("Connecting to Auth0...")
@@ -148,11 +163,13 @@ def main():
     # Check existing admins
     existing_admins = get_existing_admins(token)
     if existing_admins:
-        print("Existing admin users:")
+        print(f"Existing admin users in '{AUTH0_DATABASE_CONNECTION_NAME}':")
         for admin in existing_admins:
             print(f"  • {admin}")
         if input("\nCreate another admin? (y/N): ").lower() != 'y':
             sys.exit(0)
+    else:
+        print(f"No admin users found in '{AUTH0_DATABASE_CONNECTION_NAME}' connection.")
 
     # Get email
     email = input("\nAdmin email address: ").strip()
