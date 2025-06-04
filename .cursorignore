@@ -1,0 +1,4 @@
+# Add directories or file patterns for the Cursor AI to ignore in .gitignore style
+
+# Allow `.env.example` files to be indexed
+!*.env.example

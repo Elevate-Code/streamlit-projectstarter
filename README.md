@@ -100,12 +100,12 @@ To enable authentication in your page views (located in the `views/` directory):
 Duplicate and rename the `.env.example` file to `.env` adding your own values.
 
 ### Initial Setup
-Requires Python 3.8 or higher (check with `python --version`)
+Requires Python 3.10 or higher (check with `python --version`)
 Requires `uv` CLI tool (https://docs.astral.sh/uv/getting-started/#installation)
-- Create a virtual environment using `uv venv --python ">=3.8"`
+- Create a virtual environment using `uv venv --python ">=3.10"`
 - Always run `.venv\Scripts\activate` to activate the virtual environment (setup your IDE to do it automatically)
 - Run `uv pip install -r requirements.txt` to install all dependencies
-- Run `python scripts/generate_secrets.py` to generate the Streamlit secrets file
+- (If using Auth0) Run `python scripts/generate_secrets.py` to generate the Streamlit secrets file
 - Run `streamlit run app.py` to start the server
 
 ### Ongoing Development

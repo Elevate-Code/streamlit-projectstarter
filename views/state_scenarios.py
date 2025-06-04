@@ -1,5 +1,10 @@
-import streamlit as st
 import time
+import streamlit as st
+
+from auth.rbac import require_page_access
+
+# Check authentication first
+require_page_access("views/state_scenarios.py")
 
 def stream_data():
     LOREM_IPSUM = """

@@ -3,30 +3,32 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 
-from components.auth import check_auth, render_user_info
+from auth.rbac import create_navigation_pages
+from auth.auth import render_auth_sidebar
+from pages import ALL_PAGES
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 # Constants
 # SOME_FILE_PATH = "hello.txt"
 
 st.set_page_config(
     page_icon="🛬", # use same icon for all pages
-    layout="wide"
+    page_title="My Streamlit App",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Check authentication first (optional, see `auth.py`) - will stop execution if not authenticated
-# check_auth()
+# Always render auth sidebar to ensure login/logout UI is available
+render_auth_sidebar()
 
-# Setup navigation using st.Page
-home = st.Page("views/home.py", title="Home", icon="🏠", default=True)
-state_scenarios = st.Page("views/state_scenarios.py", title="State Scenarios", icon="🔁")
-authenticated = st.Page("views/authenticated.py", title="Authenticated", icon="🔒")
-pg = st.navigation([home, state_scenarios, authenticated])
+# Create navigation with only pages the current user can access.
+pages = create_navigation_pages(ALL_PAGES)
 
-# render user info AFTER navigation setup
-render_user_info()
-
-# Run the selected page
-pg.run()
+if pages:
+    pg = st.navigation(pages)
+    pg.run()
+else:
+    # If no pages are accessible, show a message
+    st.warning("No pages are accessible. Please log in to continue.")
