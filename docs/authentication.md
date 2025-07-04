@@ -74,6 +74,9 @@ Please create an Auth0 account and invite me as a collaborator through the Auth0
    - Click Invite A Member, enter my email address with the highest privileges (eg. "Team Owner")
 
 For handling user invitation emails, please create a Mailgun account (free for 100 emails/month) and share the credentials with me.
+
+This is crucial for our invite-only system. While email delivery is generally reliable, corporate firewalls or spam filters can sometimes block invitations. To address this, the application includes an admin interface with fallback options to manually verify users or generate secure, one-time password reset links if direct email delivery fails.
+
 1. Go to https://mailgun.com and click Start for Free
 2. Verify the account (email + phone).
 3. Add a Sending > Domain sub-domain (eg. `mg.yourdomain.com`, mine looks like: `mg.ecomanalytics.co`) and paste the 2 TXT + 2 MX records into your DNS (records can take 5-30 minutes to validate)
@@ -110,6 +113,8 @@ Once invited to a Team, you will need to grant yourself Admin permissions for th
 6. While still in Advanced Settings, go to the Endpoints tab and copy the "OpenID Configuration" URL (eg. `https://YOUR-AUTH0-DOMAIN.us.auth0.com/.well-known/openid-configuration`). You will need this for the `STREAMLIT_AUTH_SERVER_METADATA_URL` environment variable.
 7. Back at the top of the page, under Credentials > Application Authentication, select **Client Secret (Basic)** as the authentication method and click Save.
 
+**NOTE:** Pay attention to how we're using "http://localhost:8501" as the authorized option for the dev environment. When you have two Streamlit apps running at the same time locally, one of them will automatically get pushed to the next port, in which case you will see issues with logins and authentication.
+
 ### Machine-to-Machine Application Setup
 
 To enable a Streamlit admin interface for user management, create an M2M application (kind of like a Service Account). Ideally, you would create one M2M application for each distinct backend service that needs to interact with the Auth0 Management API.
@@ -119,8 +124,9 @@ To enable a Streamlit admin interface for user management, create an M2M applica
 3. Name it to clearly associate it with the application (e.g., "[App Name] M2M")
 4. Select Auth0 Management API from the available APIs
 5. Grant these minimum scopes:
-   - `read:users` - List user profiles
    - `create:users` - Create new users
+   - `read:users` - List user profiles
+   - `update:users` - Update user profiles (eg. manually verify user)
    - `read:users_app_metadata` - Manage role assignments
    - `update:users_app_metadata` - Manage role assignments
    - `create:user_tickets` - Create password reset tickets
@@ -136,6 +142,8 @@ To enable a Streamlit admin interface for user management, create an M2M applica
    ```
 
 ### Database Connection Setup
+
+While you *can* use the default "Username-Password-Authentication" database connection, if you think there is any chance that you will have additional apps under the same Auth0 account, it is strongly recommended to create a new (dedicated) database connection for the application.
 
 ⚠️ **IMPORTANT:** It is not possible to rename a database connection after creation - so take care to name it appropriately. [The only workaround](https://community.auth0.com/t/can-you-change-a-database-connection-name-after-creation/117185/3) is to create a new database connection with the new name and then Export/Import the users.
 
@@ -221,6 +229,8 @@ For more details (as this can be quite complex), see the [Role-Based Access Cont
 ### Email Provider Setup
 
 Auth0 requires an external email provider for sending customized verification and invitation emails.
+
+In cases where invitation emails fail to deliver, the application's Auth Admin page (`/auth_admin`) provides two fallback mechanisms. First, an admin can manually verify a user's email, bypassing the need for the user to click a verification link. Second, if a user still cannot log in, an admin can generate a secure, one-time password reset link that can be shared through an alternative, trusted channel.
 
 Mailgun is recommended if you have a domain name, otherwise Gmail is a good option.
 

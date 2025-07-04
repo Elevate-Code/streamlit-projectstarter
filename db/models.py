@@ -6,6 +6,9 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import os
 
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 DB_URL = os.getenv('DATABASE_URL')
 
 # Only create engine and Session if database URL is provided

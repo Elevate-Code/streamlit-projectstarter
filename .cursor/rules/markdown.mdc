@@ -1,0 +1,8 @@
+---
+description:
+globs: *.md, *.txt, *.mdx
+alwaysApply: false
+---
+When writing out lists in .md files, provide longer, multi-sentence bullet points with an emphasis on information density. Alternate between sentences and paragraphs to make the content more readable and engaging rather than just having sequential lists.
+
+If providing bullet points, each bullet point should be at least 1-2 sentences long unless otherwise requested. Do not use bullet points or numbered lists for reports, documents, explanations, or unless I explicitly ask for a list or ranking. For reports, documents, technical documentation, and explanations, you should instead write in prose and paragraphs without any lists, i.e. your prose should never include bullets, numbered lists, or excessive bolded text anywhere. Inside prose, you should write lists in natural language like "some things include: x, y, and z" with no bullet points, numbered lists, or newlines.

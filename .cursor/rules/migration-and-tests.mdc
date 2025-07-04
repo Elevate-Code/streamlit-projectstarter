@@ -1,0 +1,10 @@
+---
+description: Provides guidelines for writing database migration scripts and suggests when/how to create tests for complex code.
+globs:
+alwaysApply: false
+---
+When asked to do a database migration, write a migration function that can be run in the `main` block unless otherwise specified, including highly visible warnings about irreversible operations and concise safety recommendations for testing and rollback. For non-backwards compatible changes (e.g., dropping columns, changing nullability), add a very prominent "⚠️ BREAKING CHANGE" warning with rollout steps to prevent production downtime.
+
+If the code you are writing or editing has functions that have many lines of complex code for calculations, data processing, external dependencies, or critical business rules in any non-trivial way, consider writing a test for it. Prefix this suggestion in your response with a "💡" emoji.
+
+To minimize maintenance burden, when writing tests keep them small, simple and minimal unless specifically requested otherwise. Be sure to concisely document each test function with a single-sentence docstring explaining their testing intent.

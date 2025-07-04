@@ -1,0 +1,11 @@
+---
+description: Guides code modification with comment preservation, a preference for functional programming patterns and "stepdown" function ordering.
+globs:
+alwaysApply: false
+---
+It's very important to preserve and include any nearby comments in the code edits in your responses, (updating them if needed).
+If the reference code contains or is touching a "TODO:", "NOTE:", or "IMPORTANT:" comments, always include them in your response code.
+
+When adding or inserting functions, use the "stepdown rule" approach, starting with the high-level business logic functions that tell the main story at the top, then progressing to lower-level details later.
+
+Prefer functional programming patterns over object-oriented programming paradigms, where applicable.

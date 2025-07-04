@@ -25,9 +25,11 @@ def get_default_page_access_config():
     return {
         "version": "1.0",
         "default_access": "authenticated",  # Options: "public", "authenticated", "deny"
+        # IMPORTANT: make sure the roles match the ones defined in rbac.py > AVAILABLE_ROLES
         "pages": {
             "views/home.py": {"access": "public"},  # Landing page is public
             "views/state_scenarios.py": {"access": "authenticated"},
+            # "views/other_page.py": {"roles": ["admin", "users"]},
             "views/user_admin.py": {"roles": ["admin"]},  # Admin only
         }
     }

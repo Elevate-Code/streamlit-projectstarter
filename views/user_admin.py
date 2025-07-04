@@ -40,7 +40,7 @@ st.caption(f"View users and manage invitations for the **{AUTH0_DATABASE_CONNECT
 
 # --- Helper Functions ---
 
-@st.cache_data(ttl=600, show_spinner=False) # Cache M2M token for 10 minutes
+@st.cache_data(ttl=43200, show_spinner=False) # Cache M2M token for 12 hours
 def fetch_m2m_token():
     """Fetches an M2M access token from Auth0."""
     try:
@@ -89,7 +89,6 @@ def list_auth0_users(access_token):
                     "include_totals": "true",
                     "fields": "email,user_id,name,last_login,logins_count,email_verified,app_metadata,identities",
                     "include_fields": "true",
-                    # --- new filters ---
                     "search_engine": "v3",
                     "q": f'identities.connection:"{AUTH0_DATABASE_CONNECTION_NAME}"'
                 }
@@ -223,6 +222,67 @@ def create_user(access_token, email, connection, initial_roles=None):
             st.warning(f"User {email} may already exist.")
         return False
 
+def manually_verify_user(access_token, user_id):
+    """Manually verify a user's email address."""
+    try:
+        response = requests.patch(
+            f'https://{AUTH0_DOMAIN}/api/v2/users/{user_id}',
+            json={"email_verified": True},
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+        )
+        response.raise_for_status()
+        return True
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 403:
+            st.error("Permission denied. Please ensure your M2M application has the 'update:users' scope in Auth0.")
+            st.info("Go to Auth0 Dashboard > Applications > [Your M2M App] > APIs > Auth0 Management API > Add 'update:users' scope")
+        else:
+            st.error(f"Error verifying user: {e}")
+        return False
+
+def generate_password_reset_ticket(access_token, user_id):
+    """Generate a password reset ticket/link for manual sharing."""
+    try:
+        # Get the user details first to ensure they exist
+        user_response = requests.get(
+            f'https://{AUTH0_DOMAIN}/api/v2/users/{user_id}',
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+        user_response.raise_for_status()
+        user = user_response.json()
+
+        # Create password change ticket
+        client_id = os.getenv("STREAMLIT_AUTH_CLIENT_ID")
+        if not client_id:
+            st.error("Missing STREAMLIT_AUTH_CLIENT_ID environment variable.")
+            return None
+
+        response = requests.post(
+            f'https://{AUTH0_DOMAIN}/api/v2/tickets/password-change',
+            json={
+                "user_id": user_id,
+                "client_id": client_id,
+                "ttl_sec": 604800,  # 7 days
+                "mark_email_as_verified": True,
+                "includeEmailInRedirect": True
+            },
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+        )
+        response.raise_for_status()
+
+        ticket_data = response.json()
+        return ticket_data.get("ticket")
+
+    except requests.exceptions.HTTPError as e:
+        st.error(f"Error generating password reset ticket: {e}")
+        return None
+
 # --- Main Page Logic ---
 
 # Initialize session state
@@ -286,6 +346,60 @@ if m2m_token := fetch_m2m_token():
                 st.warning("Please enter an email address.")
             else:
                 st.error("AUTH0_DATABASE_CONNECTION_NAME not configured.")
+
+    # Manual User Verification
+    st.subheader("Manual Email Verification")
+    st.markdown("⚠️ **Use this only when email delivery fails.** Manually verify a user's email address without sending an email.")
+
+    with st.expander("Manual Verification", expanded=False):
+        st.warning("This bypasses the normal email verification process. Only use this when you have verified the user's identity through other means.")
+
+        # Get unverified users
+        unverified_users = [u for u in st.session_state.get("auth0_users", [])
+                          if not u.get('email_verified', False)]
+
+        if unverified_users:
+            with st.form("manual_verify_user"):
+                user_emails = [f"{u['email']} (ID: {u['user_id']})" for u in unverified_users]
+                selected_user = st.selectbox("Select unverified user", user_emails)
+
+                if st.form_submit_button("Verify Email", type="primary"):
+                    # Extract user_id from selection
+                    user_id = selected_user.split("ID: ")[1].rstrip(")")
+                    if manually_verify_user(m2m_token, user_id):
+                        st.success(
+                            "Email verified ✅ - If user can't log in, generate a one-time password-reset link below."
+                        )
+                        st.session_state.force_user_list_refresh = True
+        else:
+            st.info("No unverified users found.")
+
+    # Manual Password Reset Link Generation
+    st.subheader("Password Reset Link")
+    st.markdown(
+        "Create a one-time password-reset link you can share through a secure channel if the user can't access their account or email verification fails."
+    )
+
+    with st.expander("Generate link", expanded=False):
+        st.info("The link is valid for 7 days and can be used only once.")
+
+        if st.session_state.get("auth0_users"):
+            with st.form("generate_reset_link"):
+                user_list = [f"{u['email']} (ID: {u['user_id']})"
+                           for u in st.session_state.get("auth0_users", [])]
+                selected_user_for_reset = st.selectbox("Select user", user_list)
+
+                if st.form_submit_button("Generate Link", type="primary"):
+                    # Extract user_id from selection
+                    user_id = selected_user_for_reset.split("ID: ")[1].rstrip(")")
+                    reset_link = generate_password_reset_ticket(m2m_token, user_id)
+
+                    if reset_link:
+                        st.success("Copy the password-reset link below - treat this like a password.")
+                        st.code(reset_link, language="text")
+                        st.caption("Valid 7 days • single-use")
+        else:
+            st.info("No users found. Create a user first.")
 
 else:
     st.warning("M2M Access Token could not be fetched. User listing and management are unavailable.")

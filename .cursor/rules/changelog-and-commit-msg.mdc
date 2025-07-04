@@ -1,0 +1,6 @@
+---
+description: Instructs to check for and update changelogs in specific files (e.g., app.py/order_agent.py) when generating commit messages.
+globs:
+alwaysApply: false
+---
+When asked to write a commit message, make sure to look or request to look at the top of [CHANGE_LOG.md](mdc:CHANGE_LOG.md) to see if that pages changelog needs to be updated. Make this not highly visible by prefixing it with an emoji.

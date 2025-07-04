@@ -10,6 +10,17 @@ This ia a follow up to the [authentication.md](authentication.md) file.
 - `db/models.py` the database model for storing user roles and permissions
 - `db/migrations.py` the database migrations for creating and updating the database schema
 
+## pages.py
+
+The `get_default_page_access_config()` function in `utils/pages.py` provides the initial RBAC configuration that gets loaded when no configuration exists in the database. This default config is critical for bootstrapping the system.
+
+**Key constraints enforced by the system:**
+- `views/home.py` must always be public
+- `views/user_admin.py` must always require the "admin" role and cannot be public
+- Available roles are defined in `AVAILABLE_ROLES = ["admin", "users"]`
+- Pages not explicitly listed will use the `default_access` setting
+
+Once deployed and the database is populated, admins can modify these settings through the Auth Admin interface, which saves changes to the database and overrides the default configuration.
 
 ## Database Model
 

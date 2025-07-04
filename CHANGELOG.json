@@ -1,0 +1,16 @@
+{
+    "agent_rules": "When updating, first check for an existing entry with the same category and today's date. If one is found, append new changes to its 'changes' array. Otherwise, create a new object at the top of the 'changelog' array. Each object requires a 'category', a 'date' (YYYY-MM-DD), and a 'changes' array with descriptive, full-sentence strings. Use 'General' category for project-wide or uncategorized changes.",
+    "categories": ["General", "EXAMPLE"],
+    "changelog": [
+      {
+        "category": "General",
+        "date": "2025-07-04",
+        "changes": [
+          "Refactored cursor configuration from single .cursorrules file to modular .cursor/rules/*.mdc files for better organization and maintainability.",
+          "Added manual email verification and password reset link generation features to the user admin interface for handling email delivery failures.",
+          "Enhanced authentication documentation with detailed fallback procedures and clarifications about Auth0 setup.",
+          "Added comprehensive threading and concurrency guide to streamlit_tips.md with ThreadPoolExecutor examples and best practices."
+        ]
+      }
+    ]
+  }

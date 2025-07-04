@@ -9,6 +9,9 @@ from typing import Optional, List, Callable, Dict
 import os
 from dataclasses import dataclass, field
 
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 # @lru_cache(maxsize=1)
 def _get_auth_provider_name() -> str:
     provider = os.getenv("STREAMLIT_AUTH_PROVIDER")

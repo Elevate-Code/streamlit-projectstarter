@@ -1,0 +1,17 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+This project is an Streamlit template intended to expidite the process of creating a new Streamlit project and serve as a reference for future projects.
+
+**Tech Stack**
+
+- Frontend: Streamlit
+- Backend: Python scripts
+- Hosting: Railway.com
+- Database: PostgreSQL
+- Authentication: Auth0 (Auth0/OAuth2/OpenID Connect)
+- Core Third Party APIs:
+  - LiteLLM (for flexible AI model provider switching)
+  - ...
