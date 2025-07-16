@@ -108,6 +108,9 @@ Once invited to a Team, you will need to grant yourself Admin permissions for th
    - Allowed Callback URLs: `http://localhost:8501/oauth2callback, https://YOUR-RAILWAY-APP-URL.railway.app/oauth2callback`
    - Allowed Logout URLs: `http://localhost:8501, https://YOUR-RAILWAY-APP-URL.railway.app`
    - Allowed Web Origins: `http://localhost:8501, https://YOUR-RAILWAY-APP-URL.railway.app`
+
+   > 💡 **For Multiple Domains/Environments:** To support multiple domains and environments (staging, production, etc.), add their respective URLs to the `Allowed...` fields, separated by commas. Each environment deployment (e.g., on Railway) will also need its own `STREAMLIT_AUTH_REDIRECT_URI` environment variable set to its specific callback URL.
+
 4. Scroll to the bottom of Settings, and under **Advanced Settings** > Grant Types, ensure "Authorization Code" is selected.
 5. Click **Save**
 6. While still in Advanced Settings, go to the Endpoints tab and copy the "OpenID Configuration" URL (eg. `https://YOUR-AUTH0-DOMAIN.us.auth0.com/.well-known/openid-configuration`). You will need this for the `STREAMLIT_AUTH_SERVER_METADATA_URL` environment variable.
@@ -182,11 +185,9 @@ Go to Actions > Triggers > `post-login` > Add Action (+) > From scratch.
 ```js
 // Name: "Post-Login Verification"
 exports.onExecutePostLogin = async (event, api) => {
-  // Dynamically set namespace based on environment
-  const redirectUri = event.request.query.redirect_uri || '';
-  const namespace = redirectUri.includes('localhost:8501')
-    ? "http://localhost:8501/claims"
-    : "https://YOUR-RAILWAY-APP-URL.railway.app/claims";
+  // Dynamically determine the namespace from the redirect URI to support multiple environments.
+  const redirectUri = new URL(event.request.query.redirect_uri);
+  const namespace = `${redirectUri.origin}/claims`;
 
   // Always add roles to the token
   const roles = event.user.app_metadata?.roles || [];
